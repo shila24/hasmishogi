@@ -1,0 +1,193 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hasami-lab.local/schemas/training-metrics.schema.json",
+  "title": "TrainingMetricsRow",
+  "description": "One JSON line in runs/<run_id>/metrics.jsonl. Rows are appended per iteration and per evaluation.",
+  "type": "object",
+  "required": [
+    "timestamp",
+    "run_id",
+    "iteration",
+    "kind"
+  ],
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "iteration": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "collect",
+        "update",
+        "evaluation",
+        "checkpoint",
+        "opponent_pool",
+        "resume",
+        "info"
+      ]
+    },
+    "device": {
+      "type": "string"
+    },
+    "seconds": {
+      "type": "number",
+      "minimum": 0
+    },
+    "games": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "plies": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "wins": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "truncated": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "steps": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "loss": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "policy_loss": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "value_loss": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "replay_size": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "opponent": {
+      "type": "string"
+    },
+    "win_rate": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "elo_delta": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "checkpoint": {
+      "type": "string"
+    },
+    "extra": {
+      "type": "object",
+      "properties": {
+        "distinct_games": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Distinct complete joint action sequences including the opening and seat assignment; deal seed is excluded."
+        },
+        "distinct_openings": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Distinct opening joint action sequences; zero opening plies yields one empty opening when games were played."
+        },
+        "effective_games": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of (opening actions, seating) groups; zero opening plies with two seatings yields n=2 regardless of raw game count."
+        },
+        "effective_successes": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Sum of group mean scores. Each game scores win=1, loss=0, draw or separately reported truncation=0.5. Wilson uses this sum over effective_games, not raw counts."
+        },
+        "sample_unit": {
+          "const": "opening_actions_and_seating"
+        },
+        "init_checkpoint": {
+          "type": "object",
+          "description": "Weights-only fresh-start lineage. Resume preserves this object and never reapplies the donor. No optimizer, replay, counter, pool or RNG state is imported.",
+          "required": [
+            "path",
+            "iteration",
+            "algorithm",
+            "weights_sha256"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Checkpoint path exactly as configured."
+            },
+            "iteration": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "algorithm": {
+              "type": "string",
+              "minLength": 1
+            },
+            "weights_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ci_low": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "ci_high": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "additionalProperties": true,
+      "description": "Evaluation counts remain raw at the top level; extra records diversity, effective Wilson sample and interval. Startup info may record weights-only init_checkpoint lineage."
+    },
+    "terminal_reasons": {
+      "type": "object",
+      "description": "Counts of episode end reasons for this collect, including runner truncations as max_plies. The separate truncated field distinguishes caps from rule draws. Omitted in older rows or collectors without reason counters.",
+      "propertyNames": {
+        "minLength": 1
+      },
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    }
+  },
+  "additionalProperties": false
+}

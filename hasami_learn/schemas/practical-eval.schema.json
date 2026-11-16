@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Practical-play evaluation report",
+  "description": "hasami_learn/practical.py sections 7 and 10: one experiment (E1-E8). status=complete doubles as the autonomous loop's done file; smoke=true marks numbers that must never be presented as results.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "experiment",
+    "status",
+    "smoke",
+    "created_at",
+    "game_id",
+    "checkpoints",
+    "config",
+    "seeds",
+    "results"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "experiment": {
+      "enum": [
+        "single_intervention",
+        "robustness",
+        "tag_team",
+        "difficulty",
+        "calibration",
+        "levels",
+        "cost",
+        "compare"
+      ]
+    },
+    "status": {
+      "const": "complete"
+    },
+    "smoke": {
+      "type": "boolean"
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_commit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "game_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "device": {
+      "type": "string"
+    },
+    "checkpoints": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "role",
+          "path",
+          "sha256"
+        ],
+        "properties": {
+          "role": {
+            "type": "string",
+            "minLength": 1
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "levels_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "config": {
+      "type": "object"
+    },
+    "seeds": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "metric",
+          "value",
+          "ci_low",
+          "ci_high",
+          "n"
+        ],
+        "properties": {
+          "metric": {
+            "type": "string",
+            "minLength": 1
+          },
+          "arm": {
+            "type": "string"
+          },
+          "versus": {
+            "type": "string"
+          },
+          "level": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "opponent_level": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "style": {
+            "type": "string"
+          },
+          "train_style": {
+            "type": "string"
+          },
+          "phase": {
+            "type": "string"
+          },
+          "value": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "ci_low": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "ci_high": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "ci_method": {
+            "type": "string"
+          },
+          "n": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "unit": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "seconds": {
+      "type": "number",
+      "minimum": 0
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

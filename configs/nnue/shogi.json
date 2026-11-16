@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "generation": {
+    "games": 30000,
+    "nodes": 1000,
+    "threads": 24,
+    "max_threads": 24,
+    "hash_mb": 8,
+    "max_hash_mb": 192,
+    "max_moves": 320,
+    "seed": 51,
+    "byte_budget": 536870912
+  },
+  "training": {
+    "device": "cuda",
+    "epochs": 3,
+    "factorised": true,
+    "workers": 2,
+    "shuffle_buffer": 65536,
+    "feature_backend": "native",
+    "correlation_clip": 3000,
+    "patience": 2,
+    "min_delta": 0.0,
+    "lr_schedule": "none",
+    "schedule_epochs": 10,
+    "batch_size": 1024,
+    "lr": 0.001,
+    "width": 256,
+    "hidden1": 32,
+    "hidden2": 32
+  },
+  "match": {
+    "games": 400,
+    "nodes": 2000,
+    "threads": 8
+  },
+  "gate": {
+    "min_score": 0.55,
+    "min_lower": 0.5
+  },
+  "replay": {
+    "window_positions": 100000000,
+    "max_cycles": 50,
+    "data_byte_budget": 26843545600
+  }
+}

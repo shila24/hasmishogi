@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "run": {
+    "run_id": "riichi-ppo-league",
+    "output_dir": "runs",
+    "iterations": 1000,
+    "seed": 0,
+    "backend": "cpp",
+    "checkpoint_every": 10,
+    "eval_every": 10,
+    "keep_checkpoints": 2,
+    "notes": "Four-seat PPO league with hand-end belief supervision and archetype exploiters. Playing strength requires separate evaluation. Uses the native riichi engine (bit-exact with riichi/; build with scripts/build_native.py)."
+  },
+  "device": {
+    "device": "auto",
+    "amp": "auto",
+    "threads": 2,
+    "deterministic": false,
+    "inference_batch": null,
+    "fixed_batch_shape": true
+  },
+  "algorithm": {
+    "name": "ppo-league",
+    "params": {
+      "epochs": 4,
+      "minibatches": 8,
+      "aux_coef": 0.1,
+      "hand_reward_coef": 0.01,
+      "duplicate_deals": true,
+      "exploiter_every": 20,
+      "exploiter_iterations": 2,
+      "exploiter_games": 4,
+      "archetypes": [
+        "defensive",
+        "aggressive",
+        "fast"
+      ]
+    }
+  },
+  "network": {
+    "name": "tilenet",
+    "params": {
+      "channels": 32,
+      "hidden": 128,
+      "layers": 3,
+      "aux_heads": {
+        "tenpai": {
+          "shape": [
+            3
+          ],
+          "activation": "sigmoid"
+        },
+        "waits": {
+          "shape": [
+            3,
+            34
+          ],
+          "activation": "sigmoid"
+        },
+        "hand": {
+          "shape": [
+            3,
+            34
+          ],
+          "activation": "softmax"
+        },
+        "placement": {
+          "shape": [
+            4
+          ],
+          "activation": "softmax"
+        },
+        "danger": {
+          "shape": [
+            34
+          ],
+          "activation": "sigmoid"
+        }
+      }
+    }
+  },
+  "encoder": {
+    "name": "riichi-history",
+    "params": {
+      "k": 16
+    }
+  },
+  "selfplay": {
+    "games_per_iteration": 8,
+    "max_plies": 10000,
+    "workers": 1,
+    "temperature": 1.0,
+    "temperature_plies": 10,
+    "symmetry_augmentation": false,
+    "truncation_value": 0.0
+  },
+  "replay": {
+    "capacity": 2048,
+    "batch_size": 32,
+    "min_size": 16,
+    "persist": false
+  },
+  "optimizer": {
+    "name": "adam",
+    "lr": 0.0003,
+    "weight_decay": 0.0001,
+    "momentum": 0.9,
+    "grad_clip": 1.0,
+    "updates_per_iteration": 2,
+    "lr_schedule": "constant"
+  },
+  "opponents": {
+    "strategy": "pfsp",
+    "pool_size": 32,
+    "snapshot_every": 5,
+    "classical": [
+      "random",
+      "tsumogiri",
+      "shanten-greedy"
+    ],
+    "classical_weight": 0.2,
+    "exploiter_every": 0,
+    "params": {}
+  },
+  "evaluation": {
+    "games": 8,
+    "opponents": [
+      "tsumogiri",
+      "shanten-greedy"
+    ],
+    "swap_sides": true,
+    "max_plies": 10000,
+    "limits": {
+      "max_depth": 1,
+      "time_ms": 200,
+      "node_limit": 20000
+    },
+    "simulations": 0,
+    "save_records": false
+  },
+  "game": {
+    "name": "riichi",
+    "params": {}
+  }
+}

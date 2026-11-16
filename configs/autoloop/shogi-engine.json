@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "loop_id": "shogi-engine",
+  "output_dir": "runs/autoloop-shogi-engine",
+  "require_validation": true,
+  "validation_results": "validation-results/linux-cuda",
+  "device": "cuda",
+  "cycles": 1,
+  "limits": {},
+  "stages": [
+    {
+      "id": "alphazero",
+      "kind": "train",
+      "config": "configs/shogi-alphazero.json",
+      "set": {
+        "datastore.max_games": 10000,
+        "datastore.max_bytes": 32212254720
+      }
+    },
+    {
+      "id": "evaluate",
+      "kind": "evaluate",
+      "source": "alphazero",
+      "opponents": [
+        "random",
+        "alphabeta:3"
+      ],
+      "games": 100,
+      "seed": 42,
+      "simulations": 200
+    },
+    {
+      "id": "gate",
+      "kind": "gate",
+      "source": "evaluate",
+      "min_score": 0.7,
+      "min_lower": 0.6
+    },
+    {
+      "id": "export",
+      "kind": "export"
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "run": {
+    "run_id": "shogi-alphazero",
+    "output_dir": "runs",
+    "iterations": 2000,
+    "seed": 1,
+    "backend": "cpp",
+    "checkpoint_every": 5,
+    "eval_every": 20,
+    "keep_checkpoints": 5,
+    "notes": "AlphaZero on standard shogi (strongest engine for practical-play methods A/B/C); values tuned from measurements on WSL2 + RTX 4070 Ti SUPER (2026-11-14): native search, one process, 256 concurrent games; run only after the Linux/CUDA validation gate passes",
+    "checkpoint_every_seconds": 600
+  },
+  "device": {
+    "device": "auto",
+    "amp": "auto",
+    "threads": null,
+    "deterministic": false,
+    "inference_batch": 256
+  },
+  "algorithm": {
+    "name": "alphazero",
+    "params": {
+      "simulations": 128,
+      "batch_games": 256,
+      "temperature_plies": 30,
+      "search_backend": "cpp"
+    }
+  },
+  "network": {
+    "name": "resnet",
+    "params": {
+      "channels": 128,
+      "blocks": 10
+    }
+  },
+  "encoder": {
+    "name": "shogi-enc-v1",
+    "params": {}
+  },
+  "selfplay": {
+    "games_per_iteration": 256,
+    "max_plies": 400,
+    "workers": 1,
+    "temperature": 1.0,
+    "temperature_plies": 20,
+    "symmetry_augmentation": false,
+    "truncation_value": 0.0,
+    "draw_value_start": -0.2,
+    "draw_value_end": 0.0,
+    "draw_value_iterations": 100,
+    "draw_reasons": [
+      "repetition",
+      "max_moves"
+    ]
+  },
+  "replay": {
+    "capacity": 200000,
+    "batch_size": 256,
+    "min_size": 256,
+    "persist": true
+  },
+  "optimizer": {
+    "name": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "grad_clip": 1.0,
+    "updates_per_iteration": 400,
+    "lr_schedule": "constant"
+  },
+  "opponents": {
+    "strategy": "self",
+    "pool_size": 8,
+    "snapshot_every": 0,
+    "classical": [
+      "random",
+      "greedy"
+    ],
+    "classical_weight": 0.0,
+    "exploiter_every": 0,
+    "params": {}
+  },
+  "evaluation": {
+    "games": 20,
+    "opponents": [
+      "random",
+      "greedy",
+      "alphabeta:2"
+    ],
+    "swap_sides": true,
+    "max_plies": 400,
+    "limits": {
+      "max_depth": 1,
+      "time_ms": 200,
+      "node_limit": 20000
+    },
+    "simulations": 64,
+    "save_records": false
+  },
+  "datastore": {
+    "enabled": true,
+    "max_games": 10000,
+    "max_bytes": 32212254720,
+    "path": null
+  },
+  "game": {
+    "name": "shogi",
+    "params": {
+      "max_moves": 320,
+      "declaration": "csa27"
+    }
+  }
+}

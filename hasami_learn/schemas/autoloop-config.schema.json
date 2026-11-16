@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Autoloop config",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "loop_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$"
+    },
+    "output_dir": {
+      "type": "string",
+      "minLength": 1
+    },
+    "require_validation": {
+      "type": "boolean"
+    },
+    "validation_results": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cycles": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "stages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "train",
+              "evaluate",
+              "gate",
+              "module",
+              "export"
+            ]
+          },
+          "config": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$"
+          },
+          "device": {
+            "type": "string",
+            "minLength": 1
+          },
+          "set": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "cycle_overrides": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": {}
+            }
+          },
+          "opponents": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "games": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "seed": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "simulations": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "max_plies": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "mode": {
+            "type": "string",
+            "minLength": 1
+          },
+          "backend": {
+            "type": "string",
+            "minLength": 1
+          },
+          "min_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "min_lower": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "module": {
+            "type": "string",
+            "minLength": 1
+          },
+          "args": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 0
+          },
+          "done_file": {
+            "type": "string",
+            "minLength": 1
+          },
+          "opening_plies": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Evaluate-stage random opening joint steps. Defaults to the source run training config evaluation.opening_plies (0 for older configs). The stage seed is also the opening seed."
+          }
+        },
+        "required": [
+          "id",
+          "kind"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "limits": {
+      "type": "object",
+      "properties": {
+        "max_attempts": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "backoff_seconds": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 0
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "stall_timeout_s": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "probe_timeout_s": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "probe_failures": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "min_free_gb": {
+          "type": "number",
+          "minimum": 0
+        },
+        "heartbeat_s": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "suspend_gap_s": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "stop_grace_s": {
+          "type": "number",
+          "minimum": 0
+        },
+        "post_resume_progress_s": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "stop_after_hours": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "device": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "schema_version",
+    "loop_id",
+    "output_dir",
+    "require_validation",
+    "cycles",
+    "stages"
+  ],
+  "additionalProperties": false
+}

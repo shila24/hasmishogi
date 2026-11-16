@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "run": {
+    "run_id": "poker-ppo-league",
+    "output_dir": "runs",
+    "iterations": 10000,
+    "seed": 0,
+    "backend": "python",
+    "checkpoint_every": 100,
+    "eval_every": 0,
+    "keep_checkpoints": 3,
+    "notes": "Provisional self-play settings; evaluate checkpoints with poker.evaluation.evaluate_duplicate in mbb/hand. No measured strength claim."
+  },
+  "device": {
+    "device": "auto",
+    "amp": "auto",
+    "threads": 2,
+    "deterministic": false,
+    "inference_batch": null
+  },
+  "algorithm": {
+    "name": "ppo-league",
+    "params": {
+      "epochs": 4,
+      "minibatches": 8,
+      "aux_coef": 0.0,
+      "hand_reward_coef": 0.0,
+      "duplicate_deals": true
+    }
+  },
+  "network": {
+    "name": "mlp",
+    "params": {
+      "hidden": 256,
+      "layers": 2
+    }
+  },
+  "encoder": {
+    "name": "poker-enc-v1",
+    "params": {}
+  },
+  "selfplay": {
+    "games_per_iteration": 256,
+    "max_plies": 32,
+    "workers": 1,
+    "temperature": 1.0,
+    "temperature_plies": 32,
+    "symmetry_augmentation": false,
+    "truncation_value": 0.0
+  },
+  "replay": {
+    "capacity": 2048,
+    "batch_size": 32,
+    "min_size": 16,
+    "persist": false
+  },
+  "optimizer": {
+    "name": "adam",
+    "lr": 0.0003,
+    "weight_decay": 0.0001,
+    "momentum": 0.9,
+    "grad_clip": 1.0,
+    "updates_per_iteration": 2,
+    "lr_schedule": "constant"
+  },
+  "opponents": {
+    "strategy": "pfsp",
+    "pool_size": 32,
+    "snapshot_every": 10,
+    "classical": [],
+    "classical_weight": 0.0,
+    "exploiter_every": 0,
+    "params": {}
+  },
+  "evaluation": {
+    "games": 0,
+    "opponents": [
+      "random"
+    ],
+    "swap_sides": true,
+    "max_plies": 40,
+    "limits": {
+      "max_depth": 1,
+      "time_ms": 200,
+      "node_limit": 20000
+    },
+    "simulations": 0,
+    "save_records": false
+  },
+  "game": {
+    "name": "poker",
+    "params": {}
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "run": {
+    "run_id": "supervised-resnet",
+    "output_dir": "runs",
+    "iterations": 50,
+    "seed": 1,
+    "backend": "auto",
+    "checkpoint_every": 5,
+    "eval_every": 5,
+    "keep_checkpoints": 5,
+    "notes": "Supervised imitation from baseline records",
+    "checkpoint_every_seconds": 600
+  },
+  "device": {
+    "device": "auto",
+    "amp": "auto",
+    "threads": null,
+    "deterministic": false,
+    "inference_batch": 64
+  },
+  "algorithm": {
+    "name": "supervised",
+    "params": {
+      "generate_games": 300,
+      "generator": "alphabeta:2"
+    }
+  },
+  "network": {
+    "name": "resnet",
+    "params": {
+      "channels": 64,
+      "blocks": 4
+    }
+  },
+  "encoder": {
+    "name": "hasami-enc-v1",
+    "params": {}
+  },
+  "selfplay": {
+    "games_per_iteration": 32,
+    "max_plies": 300,
+    "workers": 1,
+    "temperature": 1.0,
+    "temperature_plies": 30,
+    "symmetry_augmentation": true,
+    "truncation_value": 0.0
+  },
+  "replay": {
+    "capacity": 100000,
+    "batch_size": 256,
+    "min_size": 256,
+    "persist": true
+  },
+  "optimizer": {
+    "name": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "grad_clip": 1.0,
+    "updates_per_iteration": 200,
+    "lr_schedule": "constant"
+  },
+  "opponents": {
+    "strategy": "self",
+    "pool_size": 8,
+    "snapshot_every": 0,
+    "classical": [
+      "random",
+      "greedy"
+    ],
+    "classical_weight": 0.0,
+    "exploiter_every": 0,
+    "params": {}
+  },
+  "evaluation": {
+    "games": 20,
+    "opponents": [
+      "random",
+      "greedy",
+      "alphabeta:1"
+    ],
+    "swap_sides": true,
+    "max_plies": 300,
+    "limits": {
+      "max_depth": 1,
+      "time_ms": 200,
+      "node_limit": 20000
+    },
+    "simulations": 0,
+    "save_records": false
+  },
+  "datastore": {
+    "enabled": false,
+    "max_games": 10000,
+    "max_bytes": 32212254720,
+    "path": null
+  }
+}

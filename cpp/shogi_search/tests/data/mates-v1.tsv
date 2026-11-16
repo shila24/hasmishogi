@@ -1,0 +1,6 @@
+# shogi-search-mates-v1
+# seed=490049; own sparse-position generator; exhaustive reference proof at depth d and d-2.
+# id	plies	sfen	proof_nodes
+generated-2	3	k8/9/9/1G1N5/3R5/9/9/9/8K b - 1	268
+generated-31	5	k8/9/2N6/3G5/3R5/9/9/9/8K b - 1	8706
+generated-74	1	k8/2G6/9/9/1R7/9/9/9/8K b - 1	9

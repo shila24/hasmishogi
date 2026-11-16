@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "loop_id": "shogi",
+  "output_dir": "runs/autoloop-shogi",
+  "require_validation": true,
+  "validation_results": "validation-results/linux-cuda",
+  "device": "cuda",
+  "cycles": 3,
+  "limits": {},
+  "stages": [
+    {
+      "id": "alphazero",
+      "kind": "train",
+      "config": "configs/shogi-alphazero.json",
+      "set": {
+        "run.iterations": 100,
+        "datastore.max_games": 10000,
+        "datastore.max_bytes": 32212254720
+      },
+      "cycle_overrides": {
+        "2": {
+          "run.iterations": 200
+        },
+        "3": {
+          "run.iterations": 400
+        }
+      }
+    },
+    {
+      "id": "evaluate",
+      "kind": "evaluate",
+      "source": "alphazero",
+      "opponents": [
+        "random",
+        "alphabeta:3"
+      ],
+      "games": 100,
+      "seed": 42,
+      "simulations": 200
+    },
+    {
+      "id": "gate",
+      "kind": "gate",
+      "source": "evaluate",
+      "min_score": 0.7,
+      "min_lower": 0.6
+    },
+    {
+      "id": "calibrate",
+      "kind": "module",
+      "module": "hasami_learn.practical_calibrate",
+      "args": [
+        "--engine-checkpoint",
+        "{best}",
+        "--out",
+        "runs/autoloop-shogi/shogi/c{cycle}/calibrate/levels.json",
+        "--done-file",
+        "runs/autoloop-shogi/shogi/c{cycle}/calibrate/done.json"
+      ],
+      "done_file": "done.json"
+    },
+    {
+      "id": "practical",
+      "kind": "train",
+      "config": "configs/practical-shogi.json"
+    },
+    {
+      "id": "practical-e1",
+      "kind": "module",
+      "module": "hasami_learn.practical_eval",
+      "args": [
+        "E1",
+        "--checkpoint",
+        "runs/autoloop-shogi/runs/shogi-practical-c{cycle}",
+        "--out",
+        "runs/autoloop-shogi/shogi/c{cycle}/practical-e1/results.json",
+        "--done-file",
+        "runs/autoloop-shogi/shogi/c{cycle}/practical-e1/done.json"
+      ],
+      "done_file": "done.json"
+    },
+    {
+      "id": "practical-e2",
+      "kind": "module",
+      "module": "hasami_learn.practical_eval",
+      "args": [
+        "E2",
+        "--checkpoint",
+        "runs/autoloop-shogi/runs/shogi-practical-c{cycle}",
+        "--out",
+        "runs/autoloop-shogi/shogi/c{cycle}/practical-e2/results.json",
+        "--done-file",
+        "runs/autoloop-shogi/shogi/c{cycle}/practical-e2/done.json"
+      ],
+      "done_file": "done.json"
+    },
+    {
+      "id": "practical-e3",
+      "kind": "module",
+      "module": "hasami_learn.practical_eval",
+      "args": [
+        "E3",
+        "--checkpoint",
+        "runs/autoloop-shogi/runs/shogi-practical-c{cycle}",
+        "--out",
+        "runs/autoloop-shogi/shogi/c{cycle}/practical-e3/results.json",
+        "--done-file",
+        "runs/autoloop-shogi/shogi/c{cycle}/practical-e3/done.json"
+      ],
+      "done_file": "done.json"
+    },
+    {
+      "id": "practical-e5",
+      "kind": "module",
+      "module": "hasami_learn.practical_eval",
+      "args": [
+        "E5",
+        "--checkpoint",
+        "runs/autoloop-shogi/runs/shogi-practical-c{cycle}",
+        "--out",
+        "runs/autoloop-shogi/shogi/c{cycle}/practical-e5/results.json",
+        "--done-file",
+        "runs/autoloop-shogi/shogi/c{cycle}/practical-e5/done.json"
+      ],
+      "done_file": "done.json"
+    },
+    {
+      "id": "practical-e6",
+      "kind": "module",
+      "module": "hasami_learn.practical_eval",
+      "args": [
+        "E6",
+        "--checkpoint",
+        "runs/autoloop-shogi/runs/shogi-practical-c{cycle}",
+        "--out",
+        "runs/autoloop-shogi/shogi/c{cycle}/practical-e6/results.json",
+        "--done-file",
+        "runs/autoloop-shogi/shogi/c{cycle}/practical-e6/done.json"
+      ],
+      "done_file": "done.json"
+    },
+    {
+      "id": "practical-e7",
+      "kind": "module",
+      "module": "hasami_learn.practical_eval",
+      "args": [
+        "E7",
+        "--checkpoint",
+        "runs/autoloop-shogi/runs/shogi-practical-c{cycle}",
+        "--out",
+        "runs/autoloop-shogi/shogi/c{cycle}/practical-e7/results.json",
+        "--done-file",
+        "runs/autoloop-shogi/shogi/c{cycle}/practical-e7/done.json"
+      ],
+      "done_file": "done.json"
+    },
+    {
+      "id": "export",
+      "kind": "export"
+    }
+  ]
+}

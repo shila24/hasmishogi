@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Practical-play level calibration (levels.json)",
+  "description": "hasami_learn/schemas/practical-levels.schema.json: anchors, level centres and per-style proxy parameters with measured Elo.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "created_at",
+    "game_id",
+    "engine_checkpoint",
+    "engine_sha256",
+    "k",
+    "anchors",
+    "levels"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "game_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "game_params": {
+      "type": "object"
+    },
+    "engine_checkpoint": {
+      "type": "string",
+      "minLength": 1
+    },
+    "engine_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "k": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "seed": {
+      "type": "integer"
+    },
+    "games_per_probe": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "anchors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "elo",
+          "ci",
+          "games"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "elo": {
+            "type": "number"
+          },
+          "ci": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "games": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "levels": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "level",
+          "elo_center",
+          "styles"
+        ],
+        "properties": {
+          "level": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "elo_center": {
+            "type": "number"
+          },
+          "styles": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+              "type": "object",
+              "required": [
+                "available",
+                "params",
+                "elo",
+                "ci",
+                "games"
+              ],
+              "properties": {
+                "available": {
+                  "type": "boolean"
+                },
+                "params": {
+                  "type": "object"
+                },
+                "elo": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "ci": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "games": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "train_styles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "heldout_styles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

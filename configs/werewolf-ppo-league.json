@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "run": {
+    "run_id": "werewolf-ppo-league",
+    "output_dir": "runs",
+    "iterations": 10000,
+    "seed": 0,
+    "backend": "python",
+    "checkpoint_every": 50,
+    "eval_every": 0,
+    "keep_checkpoints": 5,
+    "notes": "Self-play PPO league. Production settings are provisional; no measured human strength. Use WerewolfSpec.strength_table for team/role evaluation."
+  },
+  "device": {
+    "device": "auto",
+    "amp": "off",
+    "threads": 2,
+    "deterministic": false,
+    "inference_batch": null,
+    "fixed_batch_shape": true
+  },
+  "algorithm": {
+    "name": "ppo-league",
+    "params": {
+      "epochs": 4,
+      "minibatches": 8,
+      "aux_coef": 0.0,
+      "hand_reward_coef": 0.0,
+      "duplicate_deals": true,
+      "parallel_tables": 25
+    }
+  },
+  "network": {
+    "name": "mlp",
+    "params": {
+      "hidden": 256,
+      "layers": 3
+    }
+  },
+  "encoder": {
+    "name": "werewolf-enc-v1",
+    "params": {}
+  },
+  "selfplay": {
+    "games_per_iteration": 100,
+    "max_plies": 64,
+    "workers": 1,
+    "temperature": 1.0,
+    "temperature_plies": 64,
+    "symmetry_augmentation": false,
+    "truncation_value": 0.0
+  },
+  "replay": {
+    "capacity": 2048,
+    "batch_size": 32,
+    "min_size": 16,
+    "persist": false
+  },
+  "optimizer": {
+    "name": "adam",
+    "lr": 0.0003,
+    "weight_decay": 0.0001,
+    "momentum": 0.9,
+    "grad_clip": 1.0,
+    "updates_per_iteration": 2,
+    "lr_schedule": "constant"
+  },
+  "opponents": {
+    "strategy": "pfsp",
+    "pool_size": 32,
+    "snapshot_every": 10,
+    "classical": [
+      "random"
+    ],
+    "classical_weight": 0.0,
+    "exploiter_every": 0,
+    "params": {}
+  },
+  "evaluation": {
+    "games": 0,
+    "opponents": [
+      "random",
+      "simple"
+    ],
+    "swap_sides": true,
+    "max_plies": 64,
+    "limits": {
+      "max_depth": 1,
+      "time_ms": 200,
+      "node_limit": 20000
+    },
+    "simulations": 0,
+    "save_records": false
+  },
+  "game": {
+    "name": "werewolf",
+    "params": {}
+  }
+}

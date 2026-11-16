@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "loop_id": "tiny-shogi-nnue",
+  "output_dir": "runs/autoloop-tiny-shogi-nnue",
+  "require_validation": false,
+  "cycles": 2,
+  "device": "cpu",
+  "stages": [
+    {
+      "id": "nnue",
+      "kind": "module",
+      "module": "hasami_learn.nnue.loop",
+      "args": [
+        "--config",
+        "configs/nnue/tiny-shogi.json",
+        "--root",
+        "runs/autoloop-tiny-shogi-nnue/nnue-models",
+        "--cycle",
+        "{cycle}"
+      ],
+      "done_file": "done.json"
+    }
+  ],
+  "limits": {
+    "min_free_gb": 0,
+    "heartbeat_s": 0.1,
+    "backoff_seconds": [
+      0.1,
+      1
+    ],
+    "stop_grace_s": 30
+  }
+}

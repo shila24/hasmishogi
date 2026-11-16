@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "loop_id": "tiny-hasami",
+  "output_dir": "runs/autoloop-tiny",
+  "require_validation": false,
+  "cycles": 1,
+  "device": "cpu",
+  "limits": {
+    "min_free_gb": 0.05,
+    "heartbeat_s": 0.1,
+    "stall_timeout_s": 60,
+    "backoff_seconds": [
+      0.1,
+      1
+    ],
+    "stop_grace_s": 30
+  },
+  "stages": [
+    {
+      "id": "train",
+      "kind": "train",
+      "config": "configs/tiny/alphazero.json",
+      "set": {
+        "run.iterations": 6,
+        "run.keep_checkpoints": 3,
+        "algorithm.params": {
+          "simulations": 4,
+          "batch_games": 1
+        },
+        "selfplay.games_per_iteration": 1,
+        "selfplay.max_plies": 16,
+        "replay.persist": true
+      }
+    },
+    {
+      "id": "evaluate",
+      "kind": "evaluate",
+      "source": "train",
+      "opponents": [
+        "random"
+      ],
+      "games": 2,
+      "seed": 42,
+      "max_plies": 12,
+      "simulations": 2
+    },
+    {
+      "id": "gate",
+      "kind": "gate",
+      "source": "evaluate",
+      "min_score": 0.0,
+      "min_lower": 0.0
+    },
+    {
+      "id": "export",
+      "kind": "export"
+    }
+  ]
+}

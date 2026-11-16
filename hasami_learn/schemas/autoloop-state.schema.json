@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Autoloop state",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "loop_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$"
+    },
+    "config_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "code_commit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "idle",
+        "running",
+        "paused_disk",
+        "paused_suspend",
+        "blocked",
+        "needs_wsl_restart",
+        "complete",
+        "stopped"
+      ]
+    },
+    "cycle": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "stage_index": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "stages": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "idle",
+              "running",
+              "retry",
+              "complete",
+              "blocked"
+            ]
+          },
+          "attempts": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "started_at": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "finished_at": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "last_error": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "outputs": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "status",
+          "attempts",
+          "started_at",
+          "finished_at",
+          "last_error",
+          "outputs"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "best": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "additionalProperties": false
+    },
+    "validation": {
+      "type": "object"
+    },
+    "last_heartbeat": {
+      "type": "number",
+      "minimum": 0
+    },
+    "config_changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "to": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "time": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "time"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "schema_version",
+    "loop_id",
+    "config_sha256",
+    "code_commit",
+    "status",
+    "cycle",
+    "stage_index",
+    "stages",
+    "best",
+    "validation",
+    "last_heartbeat",
+    "config_changes"
+  ],
+  "additionalProperties": false
+}

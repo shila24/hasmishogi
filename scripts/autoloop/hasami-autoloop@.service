@@ -1,0 +1,17 @@
+[Unit]
+Description=Hasami autonomous training loop %i
+After=default.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+ExecCondition=/bin/bash "%h/.config/hasami-autoloop/%i/ready.sh"
+ExecStart=/bin/bash "%h/.config/hasami-autoloop/%i/start.sh"
+Restart=always
+RestartSec=30
+KillMode=mixed
+TimeoutStopSec=1200
+SuccessExitStatus=0
+
+[Install]
+WantedBy=default.target

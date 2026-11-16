@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Evaluation evidence (eval.json)",
+  "description": "Written by the autonomous loop's evaluate stage, consumed by its gate and by the release builder. Binds measured results to exact weights (docs/TRAINING_ja.md#evaluation).",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "checkpoint_sha256",
+    "created_at",
+    "device",
+    "seed",
+    "results"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "checkpoint": {
+      "type": "string",
+      "description": "where the evaluated checkpoint lived (informational; never copied into releases)"
+    },
+    "checkpoint_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 1,
+      "description": "ISO 8601 UTC time of the evaluation"
+    },
+    "device": {
+      "type": "string",
+      "minLength": 1,
+      "not": {
+        "const": "auto"
+      }
+    },
+    "game_id": {
+      "type": "string"
+    },
+    "seed": {
+      "type": "integer"
+    },
+    "protocol": {
+      "type": "object",
+      "description": "Games per opponent, seat rotation, limits, opening_plies, opening_seed and sample_unit=opening_actions_and_seating. Grouping excludes deal seeds. Raw wins/losses/draws remain reported."
+    },
+    "results": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "games",
+          "wins",
+          "losses",
+          "draws",
+          "truncated",
+          "ci_low",
+          "ci_high"
+        ],
+        "properties": {
+          "games": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "wins": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "losses": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "draws": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "truncated": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "score_rate": {
+            "type": "number",
+            "description": "Raw (wins + 0.5 draws) / games. The gate score and Wilson bound use equal-weight group means from extra when present."
+          },
+          "ci_low": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Wilson 95% bound on sum of group mean scores / effective_games when extra sample metadata exists. Legacy files without it retain their historical raw interval for reading; gates conservatively credit at most two legacy seatings."
+          },
+          "ci_high": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Wilson 95% bound on sum of group mean scores / effective_games when extra sample metadata exists. Legacy files without it retain their historical raw interval for reading; gates conservatively credit at most two legacy seatings."
+          },
+          "extra": {
+            "type": "object",
+            "properties": {
+              "distinct_games": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Distinct complete joint action sequences including the opening and seat assignment; deal seed is excluded."
+              },
+              "distinct_openings": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Distinct opening joint action sequences; zero opening plies yields one empty opening when games were played."
+              },
+              "effective_games": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Number of (opening actions, seating) groups; zero opening plies with two seatings yields n=2 regardless of raw game count."
+              },
+              "effective_successes": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Sum of group mean scores. Each game scores win=1, loss=0, draw or separately reported truncation=0.5. Wilson uses this sum over effective_games, not raw counts."
+              },
+              "sample_unit": {
+                "const": "opening_actions_and_seating"
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

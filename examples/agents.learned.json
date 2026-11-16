@@ -1,0 +1,12 @@
+{
+  "agents": [
+    {
+      "id": "model:latest",
+      "type": "python",
+      "family": "learned",
+      "factory": "hasami_learn.inference:create_agent",
+      "options": {"checkpoint": "{root}/runs/reinforce-resnet", "device": "auto", "mode": "auto"},
+      "description": "Latest checkpoint of runs/reinforce-resnet (edit the path; generate with: python -m hasami_learn.cli export-agents-config --checkpoint runs/<run_id>)"
+    }
+  ]
+}

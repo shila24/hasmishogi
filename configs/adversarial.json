@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "run": {
+    "run_id": "adversarial-resnet",
+    "output_dir": "runs",
+    "iterations": 200,
+    "seed": 1,
+    "backend": "auto",
+    "checkpoint_every": 5,
+    "eval_every": 10,
+    "keep_checkpoints": 5,
+    "notes": "Legal-policy league training with REINFORCE; truncated games are excluded from PFSP results.",
+    "checkpoint_every_seconds": 600
+  },
+  "device": {
+    "device": "auto",
+    "amp": "auto",
+    "threads": null,
+    "deterministic": false,
+    "inference_batch": 64
+  },
+  "algorithm": {
+    "name": "adversarial",
+    "params": {
+      "inner_algorithm": "reinforce",
+      "inner_params": {
+        "entropy_coef": 0.01,
+        "value_coef": 0.5,
+        "epochs": 2,
+        "minibatch": 256
+      },
+      "snapshot_every": 2,
+      "exploiter_every": 10,
+      "exploiter_iterations": 2,
+      "exploiter_games": 4,
+      "main_games_fraction": 1.0,
+      "learner_colour": "random",
+      "record_pool_stats": true
+    }
+  },
+  "network": {
+    "name": "resnet",
+    "params": {
+      "channels": 64,
+      "blocks": 4
+    }
+  },
+  "encoder": {
+    "name": "hasami-enc-v1",
+    "params": {}
+  },
+  "selfplay": {
+    "games_per_iteration": 24,
+    "max_plies": 300,
+    "workers": 1,
+    "temperature": 1.0,
+    "temperature_plies": 30,
+    "symmetry_augmentation": true,
+    "truncation_value": 0.0,
+    "draw_value_start": -0.2,
+    "draw_value_end": 0.0,
+    "draw_value_iterations": 100,
+    "draw_reasons": [
+      "repetition"
+    ]
+  },
+  "replay": {
+    "capacity": 100000,
+    "batch_size": 256,
+    "min_size": 256,
+    "persist": true
+  },
+  "optimizer": {
+    "name": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "grad_clip": 1.0,
+    "updates_per_iteration": 50,
+    "lr_schedule": "constant"
+  },
+  "opponents": {
+    "strategy": "pfsp",
+    "pool_size": 12,
+    "snapshot_every": 0,
+    "classical": [
+      "random",
+      "greedy",
+      "alphabeta:1"
+    ],
+    "classical_weight": 0.2,
+    "exploiter_every": 0,
+    "params": {}
+  },
+  "evaluation": {
+    "games": 20,
+    "opponents": [
+      "random",
+      "greedy",
+      "alphabeta:1",
+      "pool:latest"
+    ],
+    "swap_sides": true,
+    "max_plies": 300,
+    "limits": {
+      "max_depth": 1,
+      "time_ms": 200,
+      "node_limit": 20000
+    },
+    "simulations": 0,
+    "save_records": false
+  },
+  "datastore": {
+    "enabled": false,
+    "max_games": 10000,
+    "max_bytes": 32212254720,
+    "path": null
+  }
+}

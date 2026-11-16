@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "generation": {
+    "games": 16,
+    "nodes": 64,
+    "depth": 2,
+    "threads": 2,
+    "hash_mb": 1,
+    "max_moves": 12,
+    "opening_plies": 2,
+    "random_until": 8
+  },
+  "training": {
+    "device": "cpu",
+    "epochs": 1,
+    "width": 2,
+    "hidden1": 2,
+    "hidden2": 2,
+    "batch_size": 32,
+    "validation_fraction": 0.25,
+    "seed": 5,
+    "factorised": true,
+    "workers": 0,
+    "feature_backend": "native",
+    "patience": 2,
+    "correlation_clip": 3000,
+    "lr_schedule": "none"
+  },
+  "match": {
+    "games": 4,
+    "nodes": 64,
+    "threads": 2,
+    "hash_mb": 1,
+    "max_moves": 12,
+    "opening_plies": 2
+  },
+  "gate": {
+    "min_score": 0,
+    "min_lower": 0
+  }
+}

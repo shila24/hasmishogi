@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "loop_id": "hasami-debug2",
+  "output_dir": "runs/autoloop-hasami2",
+  "require_validation": true,
+  "validation_results": "validation-results/linux-cuda",
+  "device": "cuda",
+  "cycles": 1,
+  "limits": {},
+  "stages": [
+    {
+      "id": "alphazero",
+      "kind": "train",
+      "config": "configs/alphazero.json",
+      "set": {
+        "run.iterations": 60,
+        "run.backend": "cpp",
+        "run.eval_every": 10,
+        "run.checkpoint_every": 2,
+        "device.inference_batch": 256,
+        "algorithm.params": {
+          "simulations": 64,
+          "batch_games": 256,
+          "search_backend": "cpp"
+        },
+        "selfplay.games_per_iteration": 256,
+        "selfplay.workers": 1,
+        "replay.capacity": 200000,
+        "optimizer.updates_per_iteration": 400
+      }
+    },
+    {
+      "id": "evaluate",
+      "kind": "evaluate",
+      "source": "alphazero",
+      "opponents": [
+        "random",
+        "greedy",
+        "alphabeta:1"
+      ],
+      "games": 40,
+      "seed": 42,
+      "simulations": 64
+    },
+    {
+      "id": "gate",
+      "kind": "gate",
+      "source": "evaluate",
+      "min_score": 0.6,
+      "min_lower": 0.45
+    },
+    {
+      "id": "export",
+      "kind": "export"
+    }
+  ]
+}

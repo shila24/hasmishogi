@@ -1,0 +1,240 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hasami-lab.local/schemas/model-manifest.schema.json",
+  "title": "ModelManifest",
+  "description": "manifest.json stored next to weights.pt in every checkpoint directory. A checkpoint with a different ruleset, rule parameters, encoding or action encoding must be refused by the loader.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "manifest_id",
+    "ruleset_id",
+    "rules",
+    "encoding_id",
+    "num_planes",
+    "action_size",
+    "action_encoding",
+    "value_perspective",
+    "algorithm",
+    "network",
+    "framework",
+    "weights_file",
+    "weights_sha256",
+    "created_at",
+    "game_id",
+    "board_shape"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "manifest_id": {
+      "type": "string",
+      "const": "hasami-model-manifest-v1"
+    },
+    "ruleset_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "rules": {
+      "type": "object"
+    },
+    "encoding_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "num_planes": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "action_size": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "action_encoding": {
+      "type": "string",
+      "minLength": 1
+    },
+    "value_perspective": {
+      "type": "string",
+      "enum": [
+        "side_to_move",
+        "black"
+      ]
+    },
+    "algorithm": {
+      "type": "string",
+      "minLength": 1
+    },
+    "algorithm_params": {
+      "type": "object"
+    },
+    "network": {
+      "type": "object",
+      "required": [
+        "name",
+        "head"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "params": {
+          "type": "object"
+        },
+        "head": {
+          "type": "string",
+          "enum": [
+            "policy_value",
+            "q"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "framework": {
+      "type": "object",
+      "required": [
+        "name",
+        "version"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "const": "torch"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "weights_file": {
+      "type": "string",
+      "minLength": 1
+    },
+    "weights_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "iteration": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "train_device": {
+      "type": "string"
+    },
+    "inference_hint": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "policy",
+            "mcts",
+            "q",
+            "practical"
+          ]
+        },
+        "simulations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mcts_params": {
+          "type": "object",
+          "description": "Search settings resolved at training time (for example truncation_value) that create_agent restores; explicit mcts_params override them.",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "levels": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of calibrated levels of a practical-play checkpoint (hasami_learn/practical.py)."
+        },
+        "engine_checkpoint": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Engine checkpoint directory, relative to this checkpoint, that a practical-play checkpoint uses for its guard and proxies."
+        },
+        "engine_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "sha256 of the engine checkpoint's weights.pt."
+        }
+      },
+      "additionalProperties": false
+    },
+    "metrics": {
+      "type": "object"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "game_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "game_params": {
+      "type": "object"
+    },
+    "board_shape": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "encoder_params": {
+      "type": "object",
+      "description": "keyword arguments passed to spec.make_encoder(encoding_id, **encoder_params)"
+    },
+    "num_players": {
+      "type": "integer",
+      "minimum": 2,
+      "default": 2
+    },
+    "init_checkpoint": {
+      "type": "object",
+      "description": "Weights-only fresh-start lineage. Resume preserves this object and never reapplies the donor. No optimizer, replay, counter, pool or RNG state is imported.",
+      "required": [
+        "path",
+        "iteration",
+        "algorithm",
+        "weights_sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Checkpoint path exactly as configured."
+        },
+        "iteration": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "algorithm": {
+          "type": "string",
+          "minLength": 1
+        },
+        "weights_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

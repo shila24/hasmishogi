@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Release candidate (release.json)",
+  "description": "Written by the autonomous loop's export stage at the root of a candidate directory: the directory holds a self-contained checkpoint bundle (manifest.json, weights.pt and every other checkpoint file, e.g. levels.json and engine/) plus the envelope files eval.json and config.json. Consumed by docs/TRAINING_ja.md#evaluation assets.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "status",
+    "name",
+    "game_id",
+    "created_at",
+    "weights_sha256",
+    "evaluation",
+    "config",
+    "training_data",
+    "files"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "status": {
+      "const": "complete"
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$"
+    },
+    "loop_id": {
+      "type": "string"
+    },
+    "cycle": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_commit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "game_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]{0,31}$"
+    },
+    "weights_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "evaluation": {
+      "const": "eval.json"
+    },
+    "config": {
+      "const": "config.json"
+    },
+    "training_data": {
+      "type": "object",
+      "required": [
+        "kind",
+        "human_game_records"
+      ],
+      "properties": {
+        "kind": {
+          "const": "self-play"
+        },
+        "human_game_records": {
+          "const": false
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "files": {
+      "type": "object",
+      "minProperties": 4,
+      "propertyNames": {
+        "pattern": "^[^/\\\\:][^\\\\:]*$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      },
+      "description": "sha256 of every regular file in the candidate directory except release.json, including eval.json and config.json"
+    }
+  },
+  "additionalProperties": false
+}

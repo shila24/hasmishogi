@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "run": {
+    "run_id": "tiny-alphazero-shogi",
+    "output_dir": "runs",
+    "iterations": 1,
+    "seed": 0,
+    "backend": "python",
+    "checkpoint_every": 1,
+    "eval_every": 0,
+    "keep_checkpoints": 2,
+    "notes": "AlphaZero on standard shogi (CPU smoke)"
+  },
+  "device": {
+    "device": "cpu",
+    "amp": "off",
+    "threads": 2,
+    "deterministic": false,
+    "inference_batch": 64
+  },
+  "algorithm": {
+    "name": "alphazero",
+    "params": {
+      "simulations": 4,
+      "batch_games": 2
+    }
+  },
+  "network": {
+    "name": "mlp",
+    "params": {
+      "hidden": 64,
+      "layers": 1
+    }
+  },
+  "encoder": {
+    "name": "shogi-enc-v1",
+    "params": {}
+  },
+  "selfplay": {
+    "games_per_iteration": 2,
+    "max_plies": 24,
+    "workers": 1,
+    "temperature": 1.0,
+    "temperature_plies": 20,
+    "symmetry_augmentation": false,
+    "truncation_value": 0.0,
+    "draw_reasons": [
+      "repetition",
+      "max_moves"
+    ]
+  },
+  "replay": {
+    "capacity": 2048,
+    "batch_size": 32,
+    "min_size": 16,
+    "persist": false
+  },
+  "optimizer": {
+    "name": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "momentum": 0.9,
+    "grad_clip": 1.0,
+    "updates_per_iteration": 2,
+    "lr_schedule": "constant"
+  },
+  "opponents": {
+    "strategy": "self",
+    "pool_size": 2,
+    "snapshot_every": 0,
+    "classical": [
+      "random"
+    ],
+    "classical_weight": 0.0,
+    "exploiter_every": 0,
+    "params": {}
+  },
+  "evaluation": {
+    "games": 0,
+    "opponents": [
+      "random"
+    ],
+    "swap_sides": true,
+    "max_plies": 24,
+    "limits": {
+      "max_depth": 1,
+      "time_ms": 200,
+      "node_limit": 20000
+    },
+    "simulations": 0,
+    "save_records": false
+  },
+  "datastore": {
+    "enabled": true,
+    "max_games": 8,
+    "max_bytes": 1048576,
+    "path": null
+  },
+  "game": {
+    "name": "shogi",
+    "params": {}
+  }
+}

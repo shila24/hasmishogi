@@ -1,0 +1,475 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hasami-lab.local/schemas/training-config.schema.json",
+  "title": "TrainingConfig",
+  "description": "Configuration consumed by hasami_learn.trainer. Every learner, network, encoder and opponent strategy is selected by registry name so agent components can be swapped without code changes.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "run",
+    "device",
+    "algorithm",
+    "network",
+    "encoder",
+    "selfplay",
+    "replay",
+    "optimizer",
+    "opponents",
+    "evaluation"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "run": {
+      "type": "object",
+      "required": [
+        "run_id",
+        "output_dir",
+        "iterations",
+        "seed",
+        "backend"
+      ],
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "output_dir": {
+          "type": "string",
+          "minLength": 1
+        },
+        "iterations": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "backend": {
+          "type": "string",
+          "enum": [
+            "python",
+            "cpp",
+            "auto"
+          ]
+        },
+        "checkpoint_every": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "eval_every": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "keep_checkpoints": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "notes": {
+          "type": "string"
+        },
+        "checkpoint_every_seconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "init_checkpoint": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "default": null,
+          "description": "Optional compatible checkpoint for weights-only initialization on a fresh start. Algorithm may differ; all game, rules, encoding, network and head contracts must match. Resume never reapplies it; a different non-null path is refused."
+        }
+      },
+      "additionalProperties": false
+    },
+    "device": {
+      "type": "object",
+      "required": [
+        "device"
+      ],
+      "properties": {
+        "device": {
+          "type": "string",
+          "description": "auto | cpu | mps | cuda | cuda:N"
+        },
+        "amp": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "off",
+            "on"
+          ]
+        },
+        "threads": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "deterministic": {
+          "type": "boolean"
+        },
+        "inference_batch": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "description": "rows per batched forward in self-play collection; null = per-device default (hasami_learn.devices.DEFAULT_INFERENCE_BATCH)"
+        },
+        "fixed_batch_shape": {
+          "type": "boolean",
+          "description": "pad every batched forward to inference_batch rows so outputs do not depend on batch composition"
+        }
+      },
+      "additionalProperties": false
+    },
+    "algorithm": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "params": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    "network": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "params": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    "encoder": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    "selfplay": {
+      "type": "object",
+      "required": [
+        "games_per_iteration"
+      ],
+      "properties": {
+        "games_per_iteration": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_plies": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "null or omitted = the game spec's default_max_plies"
+        },
+        "workers": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "temperature": {
+          "type": "number",
+          "minimum": 0
+        },
+        "temperature_plies": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "symmetry_augmentation": {
+          "type": "boolean"
+        },
+        "truncation_value": {
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1
+        },
+        "draw_value_start": {
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1
+        },
+        "draw_value_end": {
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1
+        },
+        "draw_value_iterations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "draw_reasons": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "end reasons (from the game's outcome.reason) that receive the annealed draw contempt; game specific"
+        }
+      },
+      "additionalProperties": false
+    },
+    "replay": {
+      "type": "object",
+      "required": [
+        "capacity",
+        "batch_size"
+      ],
+      "properties": {
+        "capacity": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "batch_size": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "min_size": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "persist": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "optimizer": {
+      "type": "object",
+      "required": [
+        "name",
+        "lr"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": [
+            "adam",
+            "adamw",
+            "sgd"
+          ]
+        },
+        "lr": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "weight_decay": {
+          "type": "number",
+          "minimum": 0
+        },
+        "momentum": {
+          "type": "number",
+          "minimum": 0
+        },
+        "grad_clip": {
+          "type": "number",
+          "minimum": 0
+        },
+        "updates_per_iteration": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "lr_schedule": {
+          "type": "string",
+          "enum": [
+            "constant",
+            "cosine",
+            "step"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "opponents": {
+      "type": "object",
+      "required": [
+        "strategy"
+      ],
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "enum": [
+            "self",
+            "latest",
+            "uniform",
+            "pfsp"
+          ]
+        },
+        "pool_size": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "snapshot_every": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "classical": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "classical_weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "exploiter_every": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "params": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    "evaluation": {
+      "type": "object",
+      "required": [
+        "games",
+        "opponents"
+      ],
+      "properties": {
+        "games": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "opponents": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "swap_sides": {
+          "type": "boolean"
+        },
+        "max_plies": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "limits": {
+          "type": "object",
+          "properties": {
+            "max_depth": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "time_ms": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "node_limit": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "simulations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "save_records": {
+          "type": "boolean"
+        },
+        "opening_plies": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "Uniform random legal joint steps before agent play, shared by seat rotations per cycle. Counted in game plies and max_plies (must not exceed a nonzero cap). Terminal or adapter-truncated prefixes are redrawn, at most 128 attempts. Opening seed defaults to match seed, or zero."
+        }
+      },
+      "additionalProperties": false
+    },
+    "datastore": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "max_games": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "game": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "params": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ]
+    },
+    "search_semantics_version": {
+      "type": "integer",
+      "const": 2,
+      "description": "AlphaZero search/target utility identity: version 2 applies the current symmetric draw contempt inside search. Optional for legacy configs; checkpoint metadata determines resume compatibility."
+    }
+  },
+  "additionalProperties": false
+}

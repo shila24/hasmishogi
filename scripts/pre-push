@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Require owner approval of exactly one main commit and preserve remote history.
+set -Eeuo pipefail
+zero="0000000000000000000000000000000000000000"
+count=0
+while read -r local_ref local_sha remote_ref remote_sha extra; do
+  [[ -z "${local_ref:-}" ]] && continue
+  count=$((count + 1))
+  if [[ "$count" != 1 || -n "${extra:-}" || "$local_ref" != refs/heads/main || "$remote_ref" != refs/heads/main ]]; then
+    echo "pre-push: exactly one main -> main update is required" >&2
+    exit 1
+  fi
+  if [[ ! "$local_sha" =~ ^[0-9a-f]{40}$ || ! "$remote_sha" =~ ^[0-9a-f]{40}$ || "$local_sha" == "$zero" ]]; then
+    echo "pre-push: invalid commit or ref deletion" >&2
+    exit 1
+  fi
+  if [[ "${HASAMI_RELEASE_APPROVED:-}" != "$local_sha" ]]; then
+    echo "pre-push: owner approval must match the exact pushed commit" >&2
+    exit 1
+  fi
+  if [[ "$(git symbolic-ref --short HEAD)" != main || "$(git rev-parse refs/heads/main)" != "$local_sha" ]]; then
+    echo "pre-push: checked out main must match the pushed commit" >&2
+    exit 1
+  fi
+  git cat-file -e "${local_sha}^{commit}"
+  if [[ "$remote_sha" != "$zero" ]] && ! git merge-base --is-ancestor "$remote_sha" "$local_sha"; then
+    echo "pre-push: non-fast-forward refused" >&2
+    exit 1
+  fi
+done
+if [[ "$count" != 1 ]]; then
+  echo "pre-push: no approved ref update" >&2
+  exit 1
+fi
+# The installed guard and policy live in Git metadata, outside the distributed tree.
+hooks="$(git rev-parse --git-path hooks)"
+if command -v python3 >/dev/null 2>&1; then
+  python3 "$hooks/attribution_guard.py" "$hooks/attribution-policy.json"
+else
+  python "$hooks/attribution_guard.py" "$hooks/attribution-policy.json"
+fi

@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "run": {
+    "run_id": "tiny-riichi-ppo-league",
+    "output_dir": "runs",
+    "iterations": 1,
+    "seed": 0,
+    "backend": "python",
+    "checkpoint_every": 1,
+    "eval_every": 0,
+    "keep_checkpoints": 2,
+    "notes": "CPU league smoke: four duplicate tables, hand-end auxiliary labels; capped matches remain truncated."
+  },
+  "device": {
+    "device": "cpu",
+    "amp": "off",
+    "threads": 2,
+    "deterministic": false,
+    "inference_batch": null,
+    "fixed_batch_shape": true
+  },
+  "algorithm": {
+    "name": "ppo-league",
+    "params": {
+      "epochs": 1,
+      "minibatches": 2,
+      "aux_coef": 0.1,
+      "hand_reward_coef": 0.01,
+      "duplicate_deals": true
+    }
+  },
+  "network": {
+    "name": "tilenet",
+    "params": {
+      "channels": 8,
+      "hidden": 32,
+      "layers": 1,
+      "aux_heads": {
+        "tenpai": {
+          "shape": [
+            3
+          ],
+          "activation": "sigmoid"
+        },
+        "waits": {
+          "shape": [
+            3,
+            34
+          ],
+          "activation": "sigmoid"
+        },
+        "hand": {
+          "shape": [
+            3,
+            34
+          ],
+          "activation": "softmax"
+        },
+        "placement": {
+          "shape": [
+            4
+          ],
+          "activation": "softmax"
+        },
+        "danger": {
+          "shape": [
+            34
+          ],
+          "activation": "sigmoid"
+        }
+      }
+    }
+  },
+  "encoder": {
+    "name": "riichi-history",
+    "params": {
+      "k": 2
+    }
+  },
+  "selfplay": {
+    "games_per_iteration": 4,
+    "max_plies": 200,
+    "workers": 1,
+    "temperature": 1.0,
+    "temperature_plies": 10,
+    "symmetry_augmentation": false,
+    "truncation_value": 0.0
+  },
+  "replay": {
+    "capacity": 2048,
+    "batch_size": 32,
+    "min_size": 16,
+    "persist": false
+  },
+  "optimizer": {
+    "name": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "momentum": 0.9,
+    "grad_clip": 1.0,
+    "updates_per_iteration": 2,
+    "lr_schedule": "constant"
+  },
+  "opponents": {
+    "strategy": "pfsp",
+    "pool_size": 8,
+    "snapshot_every": 1,
+    "classical": [
+      "random"
+    ],
+    "classical_weight": 0.0,
+    "exploiter_every": 0,
+    "params": {}
+  },
+  "evaluation": {
+    "games": 0,
+    "opponents": [
+      "random"
+    ],
+    "swap_sides": true,
+    "max_plies": 40,
+    "limits": {
+      "max_depth": 1,
+      "time_ms": 200,
+      "node_limit": 20000
+    },
+    "simulations": 0,
+    "save_records": false
+  },
+  "game": {
+    "name": "riichi",
+    "params": {}
+  }
+}

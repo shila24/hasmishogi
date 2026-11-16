@@ -1,0 +1,198 @@
+{
+ "move_cases": [
+  {
+   "name": "uchifuzume",
+   "sfen": "8k/6G2/9/7N1/9/9/9/9/4K4 b P 1",
+   "move": "P*1b",
+   "legal": false,
+   "perft1": 80,
+   "note": "pawn-drop mate (gold covers 2a/2b, knight protects 1b)"
+  },
+  {
+   "name": "pawn_drop_check_not_mate",
+   "sfen": "8k/9/9/7N1/9/9/9/9/4K4 b P 1",
+   "move": "P*1b",
+   "legal": true,
+   "perft1": 77,
+   "note": "king escapes to 2a/2b"
+  },
+  {
+   "name": "nifu",
+   "sfen": "4k4/9/9/9/9/9/4P4/9/4K4 b P 1",
+   "move": "P*5e",
+   "legal": false,
+   "perft1": 70,
+   "note": "two pawns on a file"
+  },
+  {
+   "name": "nifu_promoted_ok",
+   "sfen": "4k4/9/9/9/9/9/4+P4/9/4K4 b P 1",
+   "move": "P*5e",
+   "legal": true,
+   "perft1": 81,
+   "note": "tokin does not count"
+  },
+  {
+   "name": "pawn_drop_last_rank",
+   "sfen": "4k4/9/9/9/9/9/9/9/4K4 b P 1",
+   "move": "P*1a",
+   "legal": false,
+   "perft1": 76,
+   "note": "dead pawn"
+  },
+  {
+   "name": "lance_drop_last_rank",
+   "sfen": "4k4/9/9/9/9/9/9/9/4K4 b L 1",
+   "move": "L*1a",
+   "legal": false,
+   "perft1": 76,
+   "note": "dead lance"
+  },
+  {
+   "name": "knight_drop_rank2",
+   "sfen": "4k4/9/9/9/9/9/9/9/4K4 b N 1",
+   "move": "N*1b",
+   "legal": false,
+   "perft1": 67,
+   "note": "dead knight"
+  },
+  {
+   "name": "knight_drop_rank3",
+   "sfen": "4k4/9/9/9/9/9/9/9/4K4 b N 1",
+   "move": "N*1c",
+   "legal": true,
+   "perft1": 67,
+   "note": "knight rank c ok"
+  },
+  {
+   "name": "pawn_move_last_rank_unpromoted",
+   "sfen": "4k4/P8/9/9/9/9/9/9/4K4 b - 1",
+   "move": "9b9a",
+   "legal": false,
+   "perft1": 6,
+   "note": "must promote"
+  },
+  {
+   "name": "pawn_move_last_rank_promoted",
+   "sfen": "4k4/P8/9/9/9/9/9/9/4K4 b - 1",
+   "move": "9b9a+",
+   "legal": true,
+   "perft1": 6,
+   "note": ""
+  },
+  {
+   "name": "pawn_nonpromote_zone_ok",
+   "sfen": "4k4/9/P8/9/9/9/9/9/4K4 b - 1",
+   "move": "9c9b",
+   "legal": true,
+   "perft1": 7,
+   "note": "non-promotion allowed"
+  },
+  {
+   "name": "knight_rank2_must_promote",
+   "sfen": "4k4/9/9/N8/9/9/9/9/4K4 b - 1",
+   "move": "9d8b",
+   "legal": false,
+   "perft1": 6,
+   "note": "dead knight move"
+  },
+  {
+   "name": "knight_rank2_promote",
+   "sfen": "4k4/9/9/N8/9/9/9/9/4K4 b - 1",
+   "move": "9d8b+",
+   "legal": true,
+   "perft1": 6,
+   "note": ""
+  },
+  {
+   "name": "pinned_silver",
+   "sfen": "4k4/9/9/9/4r4/9/4S4/9/4K4 b - 1",
+   "move": "5g6f",
+   "legal": false,
+   "perft1": 6,
+   "note": "pinned by rook"
+  },
+  {
+   "name": "pinned_silver_along_line",
+   "sfen": "4k4/9/9/9/4r4/9/4S4/9/4K4 b - 1",
+   "move": "5g5f",
+   "legal": true,
+   "perft1": 6,
+   "note": "stays on line"
+  },
+  {
+   "name": "king_into_check",
+   "sfen": "4k4/9/9/9/9/9/9/3r5/4K4 b - 1",
+   "move": "5i5h",
+   "legal": false,
+   "perft1": 2,
+   "note": "rook covers rank h"
+  },
+  {
+   "name": "gote_uchifuzume",
+   "sfen": "4k4/9/9/9/9/1n7/9/2g6/K8 w p 1",
+   "move": "P*9h",
+   "legal": false,
+   "perft1": 80,
+   "note": "180-degree mirror of the sente case"
+  },
+  {
+   "name": "gote_nifu",
+   "sfen": "4k4/4p4/9/9/9/9/9/9/4K4 w p 1",
+   "move": "P*5e",
+   "legal": false,
+   "perft1": 69,
+   "note": "gote nifu"
+  },
+  {
+   "name": "gote_pawn_drop_last_rank",
+   "sfen": "4k4/9/9/9/9/9/9/9/4K4 w p 1",
+   "move": "P*1i",
+   "legal": false,
+   "perft1": 76,
+   "note": "gote dead pawn"
+  }
+ ],
+ "declaration_cases": [
+  {
+   "name": "sente_28_10pieces",
+   "sfen": "GGGG1SSSS/RB7/4K4/9/9/9/9/9/4k4 b RB 1",
+   "declarable": true
+  },
+  {
+   "name": "sente_28_9pieces",
+   "sfen": "GGGG2SSS/RB7/4K4/9/9/9/9/9/4k4 b RBP 1",
+   "declarable": false
+  },
+  {
+   "name": "sente_27_10pieces",
+   "sfen": "GGGG1SSSS/RB7/4K4/9/9/9/9/9/4k4 b B4P 1",
+   "declarable": false
+  },
+  {
+   "name": "sente_king_outside_camp",
+   "sfen": "GGGG1SSSS/RB7/9/4K4/9/9/9/9/4k4 b RB 1",
+   "declarable": false
+  },
+  {
+   "name": "sente_28_in_check",
+   "sfen": "GGGG1SSSS/RB7/4K4/9/4r4/9/9/9/4k4 b B5P 1",
+   "declarable": false
+  },
+  {
+   "name": "sente_28_rook_not_checking",
+   "sfen": "GGGG1SSSS/RB7/4K4/9/r8/9/9/9/4k4 b B5P 1",
+   "declarable": true
+  },
+  {
+   "name": "gote_27_10pieces",
+   "sfen": "4K4/9/9/9/9/9/4k4/7br/ssss1gggg w b4p 1",
+   "declarable": true
+  },
+  {
+   "name": "gote_26_10pieces",
+   "sfen": "4K4/9/9/9/9/9/4k4/7br/ssss1gggg w b3p 1",
+   "declarable": false
+  }
+ ]
+}

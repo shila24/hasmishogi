@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hasmishogi"
+version = "0.2.0"
+description = "Hasami Shogi engines, GUI and self-play training"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = []
+
+[project.optional-dependencies]
+ai = ["torch>=2.2", "numpy>=1.26", "jsonschema>=4.18"]
+learn = ["torch>=2.2", "numpy>=1.26", "jsonschema>=4.18"]
+yaml = ["pyyaml>=6"]
+
+[project.scripts]
+hasami-gui = "hasami.gui:main"
+shogi-gui = "shogi.gui:main"
+shogi-usi = "shogi.usi:main"
+riichi-score = "riichi.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["hasami*", "shogi*", "riichi*", "poker*", "werewolf*"]
+
+[tool.setuptools.package-data]
+hasami_learn = ["schemas/*.json"]

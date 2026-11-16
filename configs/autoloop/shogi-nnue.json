@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "loop_id": "shogi-nnue",
+  "output_dir": "runs/autoloop-shogi-nnue",
+  "require_validation": true,
+  "cycles": 50,
+  "device": "cuda",
+  "stages": [
+    {
+      "id": "nnue",
+      "kind": "module",
+      "module": "hasami_learn.nnue.loop",
+      "args": [
+        "--config",
+        "configs/nnue/shogi.json",
+        "--root",
+        "runs/autoloop-shogi-nnue/nnue-models",
+        "--cycle",
+        "{cycle}"
+      ],
+      "done_file": "done.json"
+    }
+  ],
+  "validation_results": "validation-results/linux-cuda"
+}
