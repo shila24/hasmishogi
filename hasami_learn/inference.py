@@ -238,7 +238,8 @@ def create_agent(checkpoint: str, device: str = "auto", mode: str = "auto", simu
     unavailable component.
     """
     resolved = resolve_device(device)
-    loaded = load_checkpoint(checkpoint, resolved, expect_rules=rules, expect_game_id=game_id)
+    loaded = load_checkpoint(checkpoint, resolved, expect_rules=rules, expect_game_id=game_id,
+                             load_training_state=False)
     manifest = loaded.manifest
     spec = get_spec(manifest.game_id, manifest.game_params)
     encoder = spec.make_encoder(manifest.encoding_id, **(manifest.encoder_params or {}))

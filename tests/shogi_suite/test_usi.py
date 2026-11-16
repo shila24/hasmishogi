@@ -11,7 +11,7 @@ import threading
 import time
 from types import SimpleNamespace
 import unittest
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 from hasami.agents import AgentCancelled, Decision
 from shogi import create_game
@@ -304,6 +304,34 @@ class WorkerRetirementTests(unittest.TestCase):
     def test_next_search_waits_for_timed_out_worker(self):
         self.check_next_search('timeout')
 
+    def test_main_waits_for_cancelled_worker_before_exiting(self):
+        from shogi import usi
+
+        def commands():
+            yield 'go infinite\n'
+            self.entered.wait(2)
+            yield 'quit\n'
+
+        finished = threading.Event()
+
+        def run():
+            try:
+                usi.main([])
+            finally:
+                finished.set()
+
+        with patch.object(usi, 'USIEngine', return_value=self.engine), patch('sys.stdin', commands()):
+            runner = threading.Thread(target=run)
+            runner.start()
+            try:
+                self.assertTrue(self.cancelled.wait(2))
+                self.assertFalse(finished.wait(.05), 'Exit must wait for cancelled worker cleanup')
+            finally:
+                self.release.set()
+                runner.join(3)
+            self.assertFalse(runner.is_alive())
+            self.assertFalse(self.engine.worker.is_alive())
+
     def test_queued_search_keeps_deadline_while_previous_worker_is_alive(self):
         self.retire_first_search('stop')
         self.engine.command('go movetime 50 depth 1')
@@ -459,6 +487,71 @@ class NativeSearchOptionTests(unittest.TestCase):
         self.assertTrue(engine.game.is_legal(usi_to_move(engine.game, lines[-1].split()[1])))
 
 
+class InstalledAssetSmokeTests(unittest.TestCase):
+    def setUp(self):
+        from scripts import usi_smoke
+        self.smoke = usi_smoke
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        self.checkpoint = self.root / 'models/checkpoint'
+        self.nnue = self.root / 'models/nnue'
+        self.checkpoint.mkdir(parents=True)
+        self.nnue.mkdir()
+        for name in ('manifest.json', 'weights.pt'):
+            (self.checkpoint / name).write_text('fixture')
+        for name in ('weights.hlnnw1', 'weights.hlnnw1.json'):
+            (self.nnue / name).write_text('fixture')
+        self.index = self.root / 'models/index.json'
+        self.rows = [
+            {'name': 'checkpoint', 'game': 'shogi', 'asset_kind': 'checkpoint'},
+            {'name': 'nnue', 'game': 'shogi', 'asset_kind': 'nnue'},
+            {'name': 'uninstalled', 'game': 'shogi', 'asset_kind': 'nnue'},
+            {'name': 'other', 'game': 'hasami', 'asset_kind': 'checkpoint'},
+        ]
+        self.index.write_text(json.dumps({'models': self.rows}))
+
+    def test_discovery_accepts_checkpoint_and_nnue_layouts(self):
+        self.assertEqual(self.smoke.installed_models(self.root),
+                         [self.checkpoint, self.nnue / 'weights.hlnnw1'])
+
+    def test_default_command_dispatches_each_installed_asset_kind(self):
+        output = io.StringIO()
+        with patch.object(self.smoke, 'ROOT', self.root), \
+                patch.object(self.smoke, 'exercise', return_value={'ok': True}) as exercise, \
+                patch('sys.stdout', output):
+            status = self.smoke.main([])
+        self.assertEqual(status, 0, output.getvalue())
+        self.assertEqual(exercise.call_args_list, [
+            call(backend='python', timeout=15),
+            call(model=self.checkpoint, backend='python', timeout=15),
+            call(eval_file=self.nnue / 'weights.hlnnw1', backend='python', timeout=15),
+        ])
+        self.assertEqual(len(json.loads(output.getvalue())['checks']), 3)
+
+    def test_incomplete_nnue_is_rejected(self):
+        (self.nnue / 'weights.hlnnw1.json').unlink()
+        with self.assertRaisesRegex(ValueError, 'incomplete'):
+            self.smoke.installed_models(self.root)
+
+    def test_unknown_asset_kind_is_rejected(self):
+        self.index.write_text(json.dumps({'models': [dict(self.rows[1], asset_kind='unknown')]}))
+        with self.assertRaisesRegex(ValueError, 'asset kind'):
+            self.smoke.installed_models(self.root)
+
+    def test_explicit_eval_file_and_classical_only_selection(self):
+        for args, expected in (
+                (['--eval-file', str(self.nnue / 'weights.hlnnw1')],
+                 [call(eval_file=self.nnue / 'weights.hlnnw1', backend='python', timeout=15)]),
+                (['--classical-only'], []),
+                (['--model', str(self.checkpoint)], [call(model=self.checkpoint, backend='python', timeout=15)])):
+            with self.subTest(args=args), patch.object(self.smoke, 'ROOT', self.root), \
+                    patch.object(self.smoke, 'exercise', return_value={'ok': True}) as exercise, \
+                    patch('sys.stdout', io.StringIO()):
+                self.assertEqual(self.smoke.main(args), 0)
+                self.assertEqual(exercise.call_args_list, [call(backend='python', timeout=15), *expected])
+
+
 class NNUEUSITests(unittest.TestCase):
     def setUp(self):
         from shogi.native_search import available as search_available
@@ -500,6 +593,26 @@ class NNUEUSITests(unittest.TestCase):
                 self.assertIsNone(engine._agent(engine.options)._search)
             finally:
                 engine.close()
+
+    def test_smoke_loads_evalfile_and_checks_search_and_stop(self):
+        from scripts import usi_smoke
+        from tests.shogi_suite.test_native_search import write_test_nnue
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'eval weights.hlnnw1'
+            write_test_nnue(path)
+            with patch.object(usi_smoke.Session, 'send', autospec=True,
+                              side_effect=usi_smoke.Session.send) as send:
+                report = usi_smoke.exercise(eval_file=path)
+            self.assertTrue(report['ok'])
+            self.assertEqual(report['mode'], 'nnue')
+            commands = [args.args[1] for args in send.call_args_list]
+            for command in ('setoption name Engine value alphabeta-cpp',
+                            'setoption name Model value <empty>',
+                            'setoption name EvalFile value ' + str(path.resolve())):
+                self.assertIn(command, commands)
+            path.write_bytes(b'invalid weights')
+            with self.assertRaisesRegex(usi_smoke.ProtocolError, 'model error'):
+                usi_smoke.exercise(eval_file=path)
 
 
 class NNUEUSIAvailabilityTests(unittest.TestCase):

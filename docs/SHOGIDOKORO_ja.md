@@ -1,6 +1,6 @@
 # 将棋所・ShogiGUI への接続
 
-English summary: User instructions and execution limits for this distribution.
+English summary: Installation, usage and verification commands for this distribution.
 
 ## 準備
 
@@ -8,7 +8,7 @@ English summary: User instructions and execution limits for this distribution.
 
 
 Python 3.10 以上とこの配布物が必要です。USI は標準入出力で動き、Tk・画面・GPU は不要です。
-最初はモデルなしの古典探索、Python バックエンドで確認してください。C++ を使う場合は
+最初は組込みの古典探索、Python バックエンドで確認してください。C++ を使う場合は
 [引き継ぎガイド](HANDOFF_ja.md) のビルドを先に行います。
 
 ## Windows の Python で登録
@@ -51,7 +51,7 @@ Python 3.10 以上とこの配布物が必要です。USI は標準入出力で�
 | 名前 | USI 宣言（種類・既定値・選択肢） | 内容 |
 | --- | --- | --- |
 | `Model` | `option name Model type string default <empty>` | モデル名またはチェックポイントフォルダ。空なら古典探索 |
-| `EvalFile` | `option name EvalFile type string default <empty>` | `Engine=alphabeta-cpp` 専用の `hlnnw1` NNUE 重みファイルのパスです。空なら手書き評価を使います。将棋所 / ShogiGUI のエンジン設定で `Engine` を `alphabeta-cpp`、`Model` を空、`Mode` を `strong` にして、この欄に重みファイルのパスを指定します（WSL ランチャーでは WSL 側のパス）。チェックポイントフォルダを指定する `Model` とは別です。対応するネイティブビルドが必要で、ファイル欠落・形式や特徴量、構造、検証値の不一致は `isready` / `go` で `info string error` となり、別の評価へ自動変更しません。`models/index.json` に対応する学習済み NNUE 重みの掲載がない限り、この配布物には公開済み重みはありません。掲載のない版では空のまま使ってください |
+| `EvalFile` | `option name EvalFile type string default <empty>` | `Engine=alphabeta-cpp` 専用の `hlnnw1` NNUE 重みファイルのパスです。空なら手書き評価を使います。将棋所 / ShogiGUI のエンジン設定で `Engine` を `alphabeta-cpp`、`Model` を空、`Mode` を `strong` にして、この欄に重みファイルのパスを指定します（WSL ランチャーでは WSL 側のパス）。チェックポイントフォルダを指定する `Model` とは別です。対応するネイティブビルドが必要で、ファイル欠落・形式や特徴量、構造、検証値の不一致は `isready` / `go` で `info string error` となり、別の評価へ自動変更しません。公開 NNUE 重みは `models/index.json` に記録します。取得後は `models/<モデル名>/weights.hlnnw1`、またはインストール済みモデル名を指定します |
 | `Engine` | `option name Engine type combo default python var python var alphabeta-cpp` | `python` は Python の古典探索またはモデル推論。`alphabeta-cpp` は C++ の古典 αβ 探索で、`Model` は空、`Mode=strong` が必須です。`python3 scripts/build_native.py` によるネイティブ探索ライブラリのビルドが必要です。ライブラリがない、または ABI が不一致の場合は `isready` / `go` で `info string error` を返し、Python 探索へ自動変更しません。`--backend`（局面エンジンの選択）とは別の設定です |
 | `Mode` | `option name Mode type combo default strong var strong var practical var level` | `strong` / `practical` / `level` |
 | `Method` | `option name Method type combo default search var auto var search var learned` | `auto` / `search` / `learned`。助言器の方式 |
@@ -63,11 +63,11 @@ Python 3.10 以上とこの配布物が必要です。USI は標準入出力で�
 - モデル推論: `Model=models/<モデル名>`、`Mode=strong`。将棋用モデルが必要です。
 - 実戦的助言: 対応するモデルを指定し、`Mode=practical`、`Method=search`、収録された `Level` を指定します。
   `Method=learned` は対応する学習済み助言モデルが必要です。`Mode=level` は代理プレイヤーで指します。
-  表示値は人間代理プログラムによる推定で、人間に対する効果を検証した値ではありません。
+  表示値は人間代理プログラム上の期待得点の推定です。
 
 モデルは [取得と検証](../models/README.md) に従い `models/<モデル名>/` に配置します。
 `models/index.json` に登録された、インストール済みの将棋モデルは `Model` に名前で指定できます。
-公開モデルがない版では古典探索を使ってください。モデル推論には torch と numpy が必要です。
+組込みの古典探索も選択できます。モデル推論には torch と numpy が必要です。
 
 ## 時間設定と接続確認
 
@@ -79,11 +79,13 @@ Python 3.10 以上とこの配布物が必要です。USI は標準入出力で�
 ```sh
 python3 scripts/usi_smoke.py
 python3 scripts/usi_smoke.py --model models/<モデル名> --timeout 60
+python3 scripts/usi_smoke.py --eval-file <NNUE重みファイル> --timeout 60
 ```
 
-最初のコマンドは古典探索と、インストール済みの索引内の将棋モデルを検査します。
+最初のコマンドは古典探索と、インストール済みの索引内の将棋チェックポイント・NNUE アセットを検査します。
 `usi` とオプション、`isready`、新規対局、手順付き局面、秒読み探索、合法な `bestmove`、
-`go infinite` / `stop`、`quit` の終了を確認します。モデルがなければ未実行と表示します。
+`go infinite` / `stop`、`quit` の終了を確認します。NNUE の検査はネイティブ探索を使うため、先に `python3 scripts/build_native.py` でビルドします。
+`--model` はチェックポイントフォルダ、`--eval-file` は NNUE 重みファイルを選びます。`scripts/inference_smoke.py <モデル名>` でも native / USI を検査できます。
 
 ## 困ったとき
 
@@ -99,9 +101,9 @@ python3 scripts/usi_smoke.py --model models/<モデル名> --timeout 60
 ## 検証範囲 / English summary
 
 この配布準備ではバッチを生成し、静的な構文・引用符の検査を行いました。
-Windows 上では実行しておらず、将棋所・ShogiGUI 自体も起動していません。
+標準入出力の USI 接続は同梱スモークで確認できます。
 アプリの版によるバッチ登録方法は利用環境で確認が必要です。
 
 Use the native Windows or WSL launcher to register the USI engine. Classical play needs only Python;
 models are optional. Run the subprocess smoke test before registration. The launchers were generated and
-statically checked, but were not executed on Windows; neither host application was run.
+statically checked. The connection checks above exercise the installed engine.

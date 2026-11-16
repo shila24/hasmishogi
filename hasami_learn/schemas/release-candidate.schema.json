@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Release candidate (release.json)",
-  "description": "Written by the autonomous loop's export stage at the root of a candidate directory: the directory holds a self-contained checkpoint bundle (manifest.json, weights.pt and every other checkpoint file, e.g. levels.json and engine/) plus the envelope files eval.json and config.json. Consumed by docs/TRAINING_ja.md#evaluation assets.",
+  "description": "A self-contained inference asset with checksummed configuration and standalone evaluation evidence. Publication and autonomous promotion are separate operations.",
   "type": "object",
   "required": [
     "schema_version",
@@ -87,6 +87,30 @@
         "pattern": "^[0-9a-f]{64}$"
       },
       "description": "sha256 of every regular file in the candidate directory except release.json, including eval.json and config.json"
+    },
+    "asset_kind": {
+      "type": "string",
+      "enum": [
+        "checkpoint",
+        "nnue"
+      ]
+    },
+    "purpose": {
+      "type": "string",
+      "enum": [
+        "publication",
+        "pipeline-fixture"
+      ]
+    },
+    "training_summary": {
+      "type": "object"
+    },
+    "search_semantics_version": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
     }
   },
   "additionalProperties": false

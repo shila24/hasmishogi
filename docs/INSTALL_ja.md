@@ -1,6 +1,6 @@
 # インストール
 
-English summary: User instructions and execution limits for this distribution.
+English summary: Installation, usage and verification commands for this distribution.
 
 Python 3.10 以上と Tk を使います。配布物を展開して、そのフォルダでコマンドを実行してください。古典的 AI で遊ぶ場合、torch は不要です。
 
@@ -33,7 +33,7 @@ python3 -m tkinter
 python3 launch_hasami.py --backend python
 ```
 
-画面のない環境では GUI は起動できません。Python エンジンのテストは `python3 -m unittest discover -s tests -v` で実行できます。
+GUI は表示環境を使用します。Python エンジンのテストは `python3 -m unittest discover -s tests -v` で実行できます。
 
 ## C++ エンジン（任意）
 
@@ -88,4 +88,4 @@ git clone https://github.com/shila24/hasmishogi.git
 cd hasmishogi
 ```
 
-ネットワーク取得・OS パッケージの導入コマンドと Windows / macOS の手順はこの配布検証では未実行です。Linux で許可される確認コマンドは配布検証で実行します。
+各 OS の導入手順を上に示します。配布検証の実行環境とモデルの実測は [評価結果](RESULTS.md) とモデルカードを参照してください。

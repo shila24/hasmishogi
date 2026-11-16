@@ -144,9 +144,12 @@ class USIEngine:
                 raise ValueError('Model is required for practical/level mode')
             if options['Engine'] == 'alphabeta-cpp':
                 from .native_search import AlphaBetaCppAgent
-                key = ('native', options['EvalFile'])
+                evaluation = discover_models().get(options['EvalFile'], options['EvalFile'])
+                if evaluation and Path(evaluation).is_dir():
+                    evaluation = str(Path(evaluation) / 'weights.hlnnw1')
+                key = ('native', evaluation)
                 if key not in self._agent_cache:
-                    agent = AlphaBetaCppAgent(nnue=options['EvalFile'] or None)
+                    agent = AlphaBetaCppAgent(nnue=evaluation or None)
                     # Active workers retain their own reference until they finish.
                     for old in list(self._agent_cache):
                         if old[0] == 'native':
@@ -157,6 +160,8 @@ class USIEngine:
         key = tuple(options[name] for name in ('Model', 'Mode', 'Method', 'Level'))
         if key not in self._agent_cache:
             checkpoint, settings = self._checkpoint(options['Model'])
+            if Path(checkpoint).suffix == '.hlnnw1' or (Path(checkpoint) / 'weights.hlnnw1').is_file():
+                raise ValueError('Select NNUE with EvalFile and Engine alphabeta-cpp')
             if options['Mode'] == 'level':
                 agent = MoveCodeAgent(self._advisor(checkpoint, options['Method']).proxy_agent(options['Level']))
             else:
@@ -394,6 +399,9 @@ def main(argv=None):
                 break
     finally:
         engine.close()
+        # Native callbacks and handles must finish unwinding before interpreter shutdown.
+        if engine.worker is not None:
+            engine.worker.join()
 
 
 if __name__ == '__main__':

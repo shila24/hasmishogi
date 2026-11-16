@@ -98,7 +98,9 @@ class Session:
 
 
 def exercise(*, root: Path = ROOT, model: Path | None = None, timeout: float = 15,
-             backend: str = 'python', command=None) -> dict:
+             eval_file: Path | None = None, backend: str = 'python', command=None) -> dict:
+    if model is not None and eval_file is not None:
+        raise ValueError('Select either a checkpoint or NNUE weights')
     options = declared_options(root)
     sys.path.insert(0, str(root))
     from shogi import create_game
@@ -122,6 +124,10 @@ def exercise(*, root: Path = ROOT, model: Path | None = None, timeout: float = 1
         session.send('setoption name MaxNodes value 2' if model else 'setoption name MaxNodes value 1000')
         if model:
             session.send('setoption name Model value ' + str(model.resolve()))
+        if eval_file:
+            session.send('setoption name Engine value alphabeta-cpp')
+            session.send('setoption name Model value <empty>')
+            session.send('setoption name EvalFile value ' + str(eval_file.resolve()))
         session.send('isready')
         session.until('readyok')
         session.send('usinewgame')
@@ -132,7 +138,7 @@ def exercise(*, root: Path = ROOT, model: Path | None = None, timeout: float = 1
         session.send('go btime 0 wtime 0 byoyomi 2000')
         replies = session.until('bestmove')
         move = legal_reply(replies[-1])
-        if model and not any(line.startswith('info depth ') for line in replies):
+        if (model or eval_file) and not any(line.startswith('info depth ') for line in replies):
             raise ProtocolError('Model search did not complete before the deadline')
         moves.append(move)
         game.play(usi_to_move(game, move))
@@ -142,7 +148,7 @@ def exercise(*, root: Path = ROOT, model: Path | None = None, timeout: float = 1
         session.send('stop')
         stopped = legal_reply(session.until('bestmove')[-1])
         session.quit()
-        return {'mode': 'model' if model else 'classical', 'ok': True,
+        return {'mode': 'nnue' if eval_file else 'model' if model else 'classical', 'ok': True,
                 'bestmove': move, 'stopped_bestmove': stopped, 'options': list(options)}
     finally:
         game.close()
@@ -150,6 +156,7 @@ def exercise(*, root: Path = ROOT, model: Path | None = None, timeout: float = 1
 
 
 def installed_models(root: Path) -> list[Path]:
+    """Return checkpoint directories and NNUE weight files declared by the local index."""
     index = root / 'models/index.json'
     if not index.exists():
         return []
@@ -162,9 +169,13 @@ def installed_models(root: Path) -> list[Path]:
             raise ValueError('Invalid model name')
         path = root / 'models' / name
         if path.exists():
-            if not all((path / file).is_file() for file in ('manifest.json', 'weights.pt')):
+            kind = row.get('asset_kind', 'checkpoint')
+            if kind not in ('checkpoint', 'nnue'):
+                raise ValueError('Unknown model asset kind')
+            files = ('weights.hlnnw1', 'weights.hlnnw1.json') if kind == 'nnue' else ('manifest.json', 'weights.pt')
+            if not all((path / file).is_file() for file in files):
                 raise ValueError('Installed model is incomplete')
-            models.append(path)
+            models.append(path / 'weights.hlnnw1' if kind == 'nnue' else path)
     return models
 
 
@@ -174,16 +185,25 @@ def main(argv=None) -> int:
     parser.add_argument('--timeout', type=float, default=15)
     choice = parser.add_mutually_exclusive_group()
     choice.add_argument('--model', type=Path)
+    choice.add_argument('--eval-file', type=Path, help='NNUE weights loaded through the native USI EvalFile option')
     choice.add_argument('--classical-only', action='store_true')
     args = parser.parse_args(argv)
     if not 0 < args.timeout <= 300:
         parser.error('--timeout must be greater than zero and at most 300 seconds')
     try:
         checks = [exercise(backend=args.backend, timeout=args.timeout)]
-        models = [] if args.classical_only else ([args.model] if args.model else installed_models(ROOT))
-        checks.extend(exercise(model=model, backend=args.backend, timeout=args.timeout) for model in models)
+        if args.classical_only:
+            selections = []
+        elif args.model:
+            selections = [{'model': args.model}]
+        elif args.eval_file:
+            selections = [{'eval_file': args.eval_file}]
+        else:
+            selections = [{'eval_file' if model.is_file() else 'model': model}
+                          for model in installed_models(ROOT)]
+        checks.extend(exercise(**selection, backend=args.backend, timeout=args.timeout) for selection in selections)
         print(json.dumps({'ok': True, 'checks': checks,
-                          'model_status': 'tested' if models else 'not run: no model selected or installed'}))
+                          'model_status': 'tested' if selections else 'not run: no model selected or installed'}))
         return 0
     except (ProtocolError, ValueError, OSError) as exc:
         print(json.dumps({'ok': False, 'error': str(exc)}))

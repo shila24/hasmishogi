@@ -25,13 +25,16 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def unpack_verified(archive: Path, expected: str, destination: Path, model: str, expected_members: dict):
+def unpack_verified(archive: Path, expected: str, destination: Path, model: str, expected_members: dict, asset_kind="checkpoint"):
     """Verify before parsing; reject every unsafe member before creating model files."""
     if not NAME.fullmatch(model) or not re.fullmatch(r"[a-f0-9]{64}", expected):
         raise ValueError("Invalid model name or checksum")
     if sha256(archive) != expected:
         raise ValueError("SHA256 mismatch")
-    required = {model + "/manifest.json", model + "/weights.pt"}
+    if asset_kind not in ("checkpoint", "nnue"):
+        raise ValueError("Unknown model asset kind")
+    names = ("weights.hlnnw1", "weights.hlnnw1.json", "config.json", "eval.json") if asset_kind == "nnue" else ("manifest.json", "weights.pt")
+    required = {model + "/" + name for name in names}
     if not isinstance(expected_members, dict) or not required <= expected_members.keys():
         raise ValueError("Incomplete checkpoint member inventory")
     for name, checksum in expected_members.items():
@@ -77,9 +80,17 @@ def unpack_verified(archive: Path, expected: str, destination: Path, model: str,
                     shutil.copyfileobj(source, output)
                 if sha256(target_file) != expected_members[member.name]:
                     raise ValueError("Checkpoint member SHA256 mismatch")
-            manifest = json.loads((stage / "manifest.json").read_text(encoding="utf-8"))
-            if manifest.get("weights_sha256") != sha256(stage / "weights.pt"):
-                raise ValueError("Checkpoint weights checksum mismatch")
+            if asset_kind == "checkpoint":
+                manifest = json.loads((stage / "manifest.json").read_text(encoding="utf-8"))
+                if manifest.get("weights_sha256") != sha256(stage / "weights.pt"):
+                    raise ValueError("Checkpoint weights checksum mismatch")
+            else:
+                sidecar = json.loads((stage / "weights.hlnnw1.json").read_text(encoding="utf-8"))
+                if sidecar.get("format") != "hlnnw1" or sidecar.get("bytes") != (stage / "weights.hlnnw1").stat().st_size:
+                    raise ValueError("NNUE sidecar mismatch")
+                evidence = json.loads((stage / "eval.json").read_text(encoding="utf-8"))
+                if evidence.get("checkpoint_sha256") != sha256(stage / "weights.hlnnw1"):
+                    raise ValueError("NNUE evaluation checksum mismatch")
             os.rename(stage, target)
 
 
@@ -126,7 +137,7 @@ def main(argv=None):
             download(BASE_URL + tag + "/" + row["asset"], archive, row["size"])
             if archive.stat().st_size != row["size"]:
                 raise ValueError("Archive size mismatch")
-            unpack_verified(archive, row["sha256"], root / "models", name, row["members"])
+            unpack_verified(archive, row["sha256"], root / "models", name, row["members"], row.get("asset_kind", "checkpoint"))
     return 0
 
 

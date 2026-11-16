@@ -131,6 +131,13 @@
     },
     "notes": {
       "type": "string"
+    },
+    "purpose": {
+      "type": "string",
+      "enum": [
+        "publication",
+        "pipeline-fixture"
+      ]
     }
   },
   "additionalProperties": false

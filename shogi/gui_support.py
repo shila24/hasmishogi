@@ -182,7 +182,8 @@ def discover_models(directory=None):
         checkpoint = (root / name).resolve()
         if checkpoint.parent != root.resolve():
             continue
-        if all((checkpoint / file).is_file() for file in ('manifest.json', 'weights.pt')):
+        files = ('weights.hlnnw1', 'weights.hlnnw1.json') if row.get('asset_kind') == 'nnue' else ('manifest.json', 'weights.pt')
+        if all((checkpoint / file).is_file() for file in files):
             result[name] = str(checkpoint)
     return result
 
@@ -207,6 +208,11 @@ class MoveCodeAgent:
 
 def load_strong_agent(checkpoint, **options):
     """Import optional inference only on an explicit model request."""
+    path = Path(checkpoint)
+    weights = path / 'weights.hlnnw1' if path.is_dir() else path
+    if path.suffix == '.hlnnw1' or (path.is_dir() and weights.is_file()):
+        from .native_search import AlphaBetaCppAgent
+        return AlphaBetaCppAgent(nnue=str(weights))
     from hasami_learn.inference import create_agent
 
     options = dict(options)

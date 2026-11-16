@@ -13,13 +13,13 @@ GUI は規則を複製せずエンジンに委譲します。学習を使わな�
 | [examples/](../examples/README.md) | 信頼済みプラグインと外部エージェント設定の例。 |
 | [hasami/](../hasami/README.md) | はさみ将棋の規則・履歴・Python/C++ 接続・Tk GUI。engine.py から読みます。 |
 | [hasami_learn/](../hasami_learn/README.md) | ゲームアダプター、自己対戦、学習、評価、推論、運用。cli.py と games/ から読みます。 |
-| [models/](../models/README.md) | 公開モデルの索引と検証付き取得方法。重みはソースに同梱しません。 |
-| [poker/](../poker/README.md) | ポーカーの規則・観測・評価。GUI はありません。 |
+| [models/](../models/README.md) | 公開モデルの索引と検証付き取得方法。重みは Releases のアセットから取得します。 |
+| [poker/](../poker/README.md) | ポーカーの規則・観測・評価。Python API と学習アダプターを提供します。 |
 | [riichi/](../riichi/README.md) | リーチ麻雀の規則・得点・C++ 接続。game.py と cli.py が入口です。 |
 | [scripts/](../scripts/README.md) | ビルド、計測、GUI/USI の確認、学習の起動と監視。下のファイル一覧を参照。 |
 | [shogi/](../shogi/README.md) | 本将棋の規則・棋譜・探索接続・GUI・USI。engine.py、native_search.py、usi.py が入口です。 |
 | [tests/](../tests/README.md) | 公開ファイルだけで実行する規則・接続・学習テスト。unittest discover で実行します。 |
-| [werewolf/](../werewolf/README.md) | 5 人の人狼の規則・観測・基準エージェント。GUI はありません。 |
+| [werewolf/](../werewolf/README.md) | 5 人の人狼の規則・観測・基準エージェント。Python API と学習アダプターを提供します。 |
 
 ## 起動ファイル
 
@@ -27,8 +27,8 @@ GUI は規則を複製せずエンジンに委譲します。学習を使わな�
 | --- | --- |
 | [launch_hasami.py](../launch_hasami.py) | Launch the Hasami Shogi GUI. |
 | [launch_shogi.py](../launch_shogi.py) | Launch the Shogi GUI when the runtime module is available. |
-| [shogi-usi-wsl.bat](../shogi-usi-wsl.bat) | Windows から WSL 内の USI エンジンを起動（Windows 未実行）。 |
-| [shogi-usi.bat](../shogi-usi.bat) | Windows Python から USI エンジンを起動（Windows 未実行）。 |
+| [shogi-usi-wsl.bat](../shogi-usi-wsl.bat) | Windows から WSL 内の USI エンジンを起動。 |
+| [shogi-usi.bat](../shogi-usi.bat) | Windows Python から USI エンジンを起動。 |
 
 ## configs
 
@@ -161,7 +161,9 @@ C++20 の規則、C ABI、MCTS、将棋探索と NNUE。CMakeLists.txt と各 in
 | [docs/HANDOFF_ja.md](../docs/HANDOFF_ja.md) | 補助データまたは利用者向け文書。 |
 | [docs/INSTALL_ja.md](../docs/INSTALL_ja.md) | 補助データまたは利用者向け文書。 |
 | [docs/METHOD_ja.md](../docs/METHOD_ja.md) | 補助データまたは利用者向け文書。 |
-| [docs/MODEL_CARDS/README.md](../docs/MODEL_CARDS/README.md) | 補助データまたは利用者向け文書。 |
+| [docs/MODEL_CARDS/hasami-alphazero-iter44.md](../docs/MODEL_CARDS/hasami-alphazero-iter44.md) | 補助データまたは利用者向け文書。 |
+| [docs/MODEL_CARDS/nnue-factorised.md](../docs/MODEL_CARDS/nnue-factorised.md) | 補助データまたは利用者向け文書。 |
+| [docs/MODEL_CARDS/shogi-alphazero-iter30.md](../docs/MODEL_CARDS/shogi-alphazero-iter30.md) | 補助データまたは利用者向け文書。 |
 | [docs/PROGRESS_ja.md](../docs/PROGRESS_ja.md) | 補助データまたは利用者向け文書。 |
 | [docs/RESULTS.md](../docs/RESULTS.md) | 補助データまたは利用者向け文書。 |
 | [docs/SHOGIDOKORO_ja.md](../docs/SHOGIDOKORO_ja.md) | 補助データまたは利用者向け文書。 |
@@ -176,6 +178,7 @@ C++20 の規則、C ABI、MCTS、将棋探索と NNUE。CMakeLists.txt と各 in
 | [docs/images/shogi_02_select.png](../docs/images/shogi_02_select.png) | 補助データまたは利用者向け文書。 |
 | [docs/images/shogi_04_engine_game.png](../docs/images/shogi_04_engine_game.png) | 補助データまたは利用者向け文書。 |
 | [docs/images/shogi_05_eval_graph.png](../docs/images/shogi_05_eval_graph.png) | 補助データまたは利用者向け文書。 |
+| [docs/images/shogi_06_analysis.png](../docs/images/shogi_06_analysis.png) | 補助データまたは利用者向け文書。 |
 
 ## examples
 
@@ -314,7 +317,7 @@ C++20 の規則、C ABI、MCTS、将棋探索と NNUE。CMakeLists.txt と各 in
 
 ## models
 
-公開モデルの索引と検証付き取得方法。重みはソースに同梱しません。
+公開モデルの索引と検証付き取得方法。重みは Releases のアセットから取得します。
 
 | ファイル | 役割 |
 | --- | --- |
@@ -322,7 +325,7 @@ C++20 の規則、C ABI、MCTS、将棋探索と NNUE。CMakeLists.txt と各 in
 
 ## poker
 
-ポーカーの規則・観測・評価。GUI はありません。
+ポーカーの規則・観測・評価。Python API と学習アダプターを提供します。
 
 | ファイル | 役割 |
 | --- | --- |
@@ -385,10 +388,10 @@ C++20 の規則、C ABI、MCTS、将棋探索と NNUE。CMakeLists.txt と各 in
 | [scripts/validate_training.sh](../scripts/validate_training.sh) | 本番学習前の native / 両 Python / CUDA / 再開の検証と記録。 |
 | [scripts/validation_env.py](../scripts/validation_env.py) | Print a sanitized description of the validation machine as JSON (no host, user, IP or absolute paths). |
 | [scripts/validation_summary.py](../scripts/validation_summary.py) | Sanitize a validate_training.sh result directory, extract key results, decide the gate, and package it. |
-| [scripts/windows/install_tasks.ps1](../scripts/windows/install_tasks.ps1) | Windows ログオン・復帰タスクの登録（未実行）。 |
-| [scripts/windows/keep_awake.ps1](../scripts/windows/keep_awake.ps1) | 指定時に稼働中だけ Windows の自動スリープを抑制（未実行）。 |
-| [scripts/windows/resume.ps1](../scripts/windows/resume.ps1) | WSL の復帰マーカーと再開監視（未実行）。 |
-| [scripts/windows/uninstall_tasks.ps1](../scripts/windows/uninstall_tasks.ps1) | Windows タスクの解除（未実行）。 |
+| [scripts/windows/install_tasks.ps1](../scripts/windows/install_tasks.ps1) | Windows ログオン・復帰タスクの登録。 |
+| [scripts/windows/keep_awake.ps1](../scripts/windows/keep_awake.ps1) | 指定時に稼働中だけ Windows の自動スリープを抑制。 |
+| [scripts/windows/resume.ps1](../scripts/windows/resume.ps1) | WSL の復帰マーカーと再開監視。 |
+| [scripts/windows/uninstall_tasks.ps1](../scripts/windows/uninstall_tasks.ps1) | Windows タスクの解除。 |
 
 ## shogi
 
@@ -447,6 +450,7 @@ C++20 の規則、C ABI、MCTS、将棋探索と NNUE。CMakeLists.txt と各 in
 | [tests/learn/test_gumbel_search.py](../tests/learn/test_gumbel_search.py) | Hand-computed Gumbel search and frozen default-search regressions. |
 | [tests/learn/test_league_collection_parity.py](../tests/learn/test_league_collection_parity.py) | batched collection acceptance 5.1: reference and batched league collection produce identical data (exact, on CPU). |
 | [tests/learn/test_mcts.py](../tests/learn/test_mcts.py) | PUCT legality, history, batching, and resource-lifetime regressions. |
+| [tests/learn/test_model_candidate.py](../tests/learn/test_model_candidate.py) | Inference bundles remain legal and independent of optimizer and replay state. |
 | [tests/learn/test_multiplayer.py](../tests/learn/test_multiplayer.py) | Executable GameSpec v2 contracts, including simultaneous hidden decisions. |
 | [tests/learn/test_native_mcts.py](../tests/learn/test_native_mcts.py) | Native PUCT parity, ownership, and training integration regressions. |
 | [tests/learn/test_nnue.py](../tests/learn/test_nnue.py) | NNUE cross-language contracts and deterministic learning regressions. |
@@ -519,7 +523,7 @@ C++20 の規則、C ABI、MCTS、将棋探索と NNUE。CMakeLists.txt と各 in
 
 ## werewolf
 
-5 人の人狼の規則・観測・基準エージェント。GUI はありません。
+5 人の人狼の規則・観測・基準エージェント。Python API と学習アダプターを提供します。
 
 | ファイル | 役割 |
 | --- | --- |

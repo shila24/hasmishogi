@@ -1,13 +1,13 @@
 # 配布版の引き継ぎ
 
-English summary: User instructions and execution limits for this distribution.
+English summary: Installation, usage and verification commands for this distribution.
 
 ## 配置と収録内容
 
 [README のゲーム別一覧](../README.md) は、実際に収録したモジュール・起動点・モデル索引から生成しています。
 `hasami/` と `shogi/` は規則・GUI、`riichi/` は麻雀エンジンと点数計算 CLI です。
 `poker/` と `werewolf/` は Python の規則エンジンで、学習アダプターも収録します。
-この二つには本配布の GUI・USI・CLI はありません。
+Python API から利用します。
 `hasami_learn/` は学習・自己対戦・評価・推論・助言・自律ループを含むパッケージ全体です。
 `cpp/` はネイティブエンジンと探索、`scripts/` はビルド・モデル取得・動作確認、
 `tests/` は実行時の回帰テスト、`models/` は索引と追加モデルの配置先です。
@@ -45,10 +45,10 @@ python3 -m venv .venv
 ```
 
 Windows の仮想環境は `.venv\Scripts\python.exe` です。モデル名は `models/index.json` から選びます。
-モデルが掲載されていなければダウンロードできるモデルはありません。
+モデルごとの取得コマンドと実測をモデルカードに掲載しています。
 取得スクリプトはアーカイブの SHA256 と各ファイルの SHA256、ファイル一覧を検証して配置します。
 手動でコピーする場合も [モデル案内](../models/README.md) の検証を行ってください。
-`ai` extra は torch / numpy / jsonschema を導入します。モデルが掲載されるまではモデル取得・実モデル推論の手順は未実行です。
+`ai` extra は torch / numpy / jsonschema を導入します。取得後は推論スモークで接続を確認できます。
 
 GUI はモデル用の Python で起動し、「モデル読込」からチェックポイントフォルダを選びます。
 将棋では索引内のインストール済みモデルも利用できます。USI は `Model` にモデル名またはフォルダを指定します。
@@ -58,24 +58,24 @@ GUI はモデル用の Python で起動し、「モデル読込」からチェ�
 
 ## 麻雀
 
-麻雀は Python API と C++ バックエンドを収録します。画面対局用 GUI はありません。
+麻雀は Python API と C++ バックエンドを収録します。画面対局用 Python API と学習アダプターを提供します。
 点数計算 CLI は和了前の 13 枚と和了牌を指定します。
 
 ```sh
 python3 -m riichi.cli score 123m123p123s45s77p --win 6s --tsumo --riichi
 ```
 
-JSON で役・符・点数を返します。これは点数計算の入口であり、対局 GUI ではありません。
+JSON で役・符・点数を返します。点数計算の入口として利用できます。
 
 ## 実測結果と確認範囲
 
 [評価結果](RESULTS.md) と `docs/MODEL_CARDS/` に、評価の日時・装置・対戦相手・対局数・区間を記録します。
-データがない項目は「未計測」です。動作確認は棋力の証明ではありません。
-Windows 用バッチは生成・静的検査のみで、Windows、将棋所、ShogiGUI の実行確認は行っていません。
+各表の数値は記載された評価条件での測定です。
+Windows 用バッチは生成・静的検査を行っています。ホストアプリへの接続手順は専用ガイドに記載しています。
 
 ## English summary
 
 The public tree contains engines, training code, two Tk GUIs, shogi USI, a riichi scoring CLI and optional model inference.
-Poker and werewolf include engines and training code, with no GUI. Build native libraries with `scripts/build_native.py`,
+Poker and werewolf provide Python engines and training adapters. Build native libraries with `scripts/build_native.py`,
 run the runtime tests, then verify installed model assets and USI replies. Measured results live in `docs/RESULTS.md`
-and the model cards. Windows host integration still requires testing on Windows.
+and the model cards. The host-integration guide includes connection checks to run after registration.

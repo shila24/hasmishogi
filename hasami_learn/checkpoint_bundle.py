@@ -51,13 +51,19 @@ def _verify_weights(directory: Path, manifest: dict[str, Any]) -> str:
     return actual
 
 
-def _copy_files(source: Path, target: Path, skip: str | None = None) -> None:
+TRAINING_FILES = {"learner_state.pt", "trainer_state.json", "replay.npz", "replay_snapshot.npz",
+                  "run-config.json", "config.json", "metrics.jsonl"}
+
+
+def _copy_files(source: Path, target: Path, skip: str | None = None, *, inference_only=False) -> None:
     for path in sorted(source.rglob("*")):
         relative = path.relative_to(source)
         if skip is not None and relative.parts[0] == skip:
             continue
         if path.is_symlink():
             raise BundleError(f"{path}: checkpoints must not contain links")
+        if inference_only and path.name in TRAINING_FILES:
+            continue
         if path.is_dir():
             (target / relative).mkdir(parents=True, exist_ok=True)
         elif path.is_file():
@@ -115,13 +121,15 @@ def _verify_engine(engine: Path, expected: str | None) -> None:
         raise BundleError(f"engine checkpoint {engine} must not depend on another engine")
 
 
-def bundle_checkpoint(source: str | Path, target: str | Path) -> dict[str, str]:
+def bundle_checkpoint(source: str | Path, target: str | Path, *, inference_only=False) -> dict[str, str]:
     """Copy checkpoint ``source`` into the new directory ``target`` as a self-contained bundle.
 
     Every regular file is copied (links are refused) and the weights hash is verified. When the manifest names an
     ``engine_checkpoint``, that checkpoint is verified against ``engine_sha256``, copied into ``target/engine`` and the
     copied manifest's hint is rewritten to ``"engine"``. The bundle is written into a temporary sibling, fsynced and
     renamed into place, so ``target`` either does not exist or is complete. Returns ``file_hashes(target)``.
+    ``inference_only`` omits optimizer, trainer, replay and run metadata, including in dependencies.
+    Promotion and training copies retain their existing complete-state behavior by default.
     """
     # Release inventory tooling loads the read-only helpers as a standalone
     # module. Only publication needs the package's writer lock.
@@ -130,10 +138,10 @@ def bundle_checkpoint(source: str | Path, target: str | Path) -> dict[str, str]:
     # Autoloop scratch cleanup shares this namespace (for example .tmp_baseline).
     target = writer_path(target)
     with run_lock(target.parent, ".publish.lock") as directory:
-        return _bundle_checkpoint(Path(source), directory / target.name)
+        return _bundle_checkpoint(Path(source), directory / target.name, inference_only=inference_only)
 
 
-def _bundle_checkpoint(source: Path, target: Path) -> dict[str, str]:
+def _bundle_checkpoint(source: Path, target: Path, *, inference_only=False) -> dict[str, str]:
     if target.exists():
         raise BundleError(f"{target} already exists")
     manifest = _manifest(source)
@@ -146,9 +154,10 @@ def _bundle_checkpoint(source: Path, target: Path) -> dict[str, str]:
         shutil.rmtree(temporary)
     temporary.mkdir(parents=True)
     try:
-        _copy_files(source, temporary, skip=ENGINE_DIR if engine is not None else None)
+        _copy_files(source, temporary, skip=ENGINE_DIR if engine is not None else None,
+                    inference_only=inference_only)
         if engine is not None:
-            _copy_files(engine, temporary / ENGINE_DIR)
+            _copy_files(engine, temporary / ENGINE_DIR, inference_only=inference_only)
             manifest["inference_hint"]["engine_checkpoint"] = ENGINE_DIR
             (temporary / MANIFEST).write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
             _verify_engine(temporary / ENGINE_DIR, manifest["inference_hint"].get("engine_sha256"))
